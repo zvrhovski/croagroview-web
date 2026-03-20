@@ -1,37 +1,700 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>CroAgroView</title>
-    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
-    <style id="expo-reset">
-      /* These styles make the body full-height */
-      html,
-      body {
-        height: 100%;
-      }
-      /* These styles disable body scrolling if you are using <ScrollView> */
-      body {
-        overflow: hidden;
-      }
-      /* These styles make the root element full-height */
-      #root {
-        display: flex;
-        height: 100%;
-        flex: 1;
-      }
-    </style>
-  <link rel="icon" href="favicon.ico" /></head>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CroAgroView – Vaš prozor u svijet poljoprivrede</title>
+    <meta name="description" content="CroAgroView - moderna aplikacija za hrvatske poljoprivrednike. Tehnologija, inovacija i tradicija.">
+    <link rel="icon" href="logo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  <body>
-    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <!-- The root element for your Expo app. -->
-    <div id="root"></div>
-  <script src="_expo/static/js/web/index-3f0483573dbbb1506fb3f85d90bf786f.js" defer></script>
+        :root {
+            --green-dark: #1B5E20;
+            --green-main: #2E7D32;
+            --green-mid: #43A047;
+            --green-light: #8BC34A;
+            --green-pale: #C8E6C9;
+            --yellow: #FFC107;
+            --yellow-light: #FFD54F;
+            --orange: #F57C00;
+            --white: #ffffff;
+            --gray-light: #F5F7F5;
+            --gray: #6B7280;
+            --dark: #1a1a2e;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* NAVIGATION */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(46,125,50,0.1);
+            transition: box-shadow 0.3s;
+        }
+        nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo img { height: 40px; }
+        .nav-logo span { font-weight: 700; font-size: 1.2rem; color: var(--green-dark); }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--green-main); }
+        .nav-cta {
+            background: var(--green-main) !important;
+            color: var(--white) !important;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 600 !important;
+            transition: all 0.3s !important;
+        }
+        .nav-cta:hover { background: var(--green-dark) !important; transform: translateY(-1px); }
+
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: var(--green-dark); margin: 6px 0; transition: 0.3s; }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0fdf0 0%, #ecfdf5 30%, #fefce8 70%, #fff7ed 100%);
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255,193,7,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,195,74,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-text h1 {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--green-dark);
+            margin-bottom: 20px;
+        }
+        .hero-text h1 .highlight {
+            background: linear-gradient(135deg, var(--green-main), var(--green-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-slogan {
+            font-size: 1.25rem;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 36px;
+            max-width: 500px;
+        }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--green-main), var(--green-mid));
+            color: var(--white);
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 20px rgba(46,125,50,0.3);
+            transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(46,125,50,0.4); }
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            color: var(--green-main);
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border: 2px solid var(--green-pale);
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover { border-color: var(--green-main); transform: translateY(-2px); }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .hero-logo-wrap {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-logo-wrap::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139,195,74,0.2), rgba(255,193,7,0.15));
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .hero-logo-wrap img {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(46,125,50,0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* STATS BAR */
+        .stats {
+            background: var(--white);
+            border-top: 1px solid var(--green-pale);
+            border-bottom: 1px solid var(--green-pale);
+        }
+        .stats-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            text-align: center;
+        }
+        .stat-item h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--green-main);
+            margin-bottom: 4px;
+        }
+        .stat-item p { color: var(--gray); font-size: 0.95rem; font-weight: 500; }
+
+        /* FEATURES */
+        .features {
+            padding: 100px 24px;
+            background: var(--gray-light);
+        }
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 60px;
+        }
+        .section-tag {
+            display: inline-block;
+            background: var(--green-pale);
+            color: var(--green-main);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .section-header h2 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--green-dark);
+            margin-bottom: 16px;
+        }
+        .section-header p { color: var(--gray); font-size: 1.1rem; line-height: 1.6; }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 36px 28px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(46,125,50,0.12);
+            border-color: var(--green-pale);
+        }
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 { font-size: 1.15rem; font-weight: 700; color: var(--green-dark); margin-bottom: 10px; }
+        .feature-card p { color: var(--gray); font-size: 0.95rem; line-height: 1.6; }
+
+        .fi-green { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+        .fi-yellow { background: linear-gradient(135deg, #FFF8E1, #FFECB3); }
+        .fi-blue { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+        .fi-orange { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+        .fi-purple { background: linear-gradient(135deg, #F3E5F5, #E1BEE7); }
+        .fi-teal { background: linear-gradient(135deg, #E0F2F1, #B2DFDB); }
+
+        /* MODULES */
+        .modules {
+            padding: 100px 24px;
+            background: var(--white);
+        }
+        .modules-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .module-card {
+            background: var(--gray-light);
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: default;
+        }
+        .module-card:hover {
+            background: var(--green-dark);
+            color: var(--white);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(27,94,32,0.2);
+        }
+        .module-card:hover .module-name { color: var(--white); }
+        .module-card:hover .module-desc { color: rgba(255,255,255,0.7); }
+        .module-emoji { font-size: 2.2rem; margin-bottom: 12px; }
+        .module-name { font-weight: 700; font-size: 0.95rem; color: var(--green-dark); margin-bottom: 6px; transition: color 0.3s; }
+        .module-desc { font-size: 0.82rem; color: var(--gray); transition: color 0.3s; }
+
+        /* CTA */
+        .cta-section {
+            padding: 100px 24px;
+            background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-main) 50%, #1B8E20 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .cta-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+        .cta-section h2 { font-size: 2.5rem; font-weight: 800; color: var(--white); margin-bottom: 20px; }
+        .cta-section p { color: rgba(255,255,255,0.85); font-size: 1.15rem; margin-bottom: 40px; line-height: 1.6; }
+        .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            color: var(--green-dark);
+            padding: 16px 36px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+        .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(0,0,0,0.2); }
+        .btn-outline-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--white);
+            padding: 16px 36px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: all 0.3s;
+        }
+        .btn-outline-white:hover { border-color: var(--white); transform: translateY(-2px); }
+
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            padding: 60px 24px 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 40px;
+        }
+        .footer-brand img { height: 50px; margin-bottom: 16px; filter: brightness(0) invert(1); }
+        .footer-brand p { font-size: 0.9rem; line-height: 1.6; max-width: 300px; }
+        .footer-col h4 { color: var(--white); font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-col a { display: block; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.9rem; margin-bottom: 10px; transition: color 0.3s; }
+        .footer-col a:hover { color: var(--green-light); }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .footer-bottom a { color: var(--green-light); text-decoration: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 968px) {
+            .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+            .hero-text h1 { font-size: 2.4rem; }
+            .hero-slogan { margin: 0 auto 36px; }
+            .hero-buttons { justify-content: center; }
+            .hero-logo-wrap { width: 280px; height: 280px; }
+            .hero-logo-wrap img { width: 200px; height: 200px; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .modules-grid { grid-template-columns: repeat(3, 1fr); }
+            .footer-inner { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .hero-text h1 { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .modules-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+            .stat-item h3 { font-size: 1.8rem; }
+            .section-header h2 { font-size: 1.8rem; }
+            .cta-section h2 { font-size: 1.8rem; }
+            .nav-links { display: none; }
+            .hamburger { display: block; }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--white);
+                padding: 20px 24px;
+                border-bottom: 1px solid var(--green-pale);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVIGATION -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <img src="logo.png" alt="CroAgroView">
+                <span>CroAgroView</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#features">Značajke</a>
+                <a href="#modules">Moduli</a>
+                <a href="#about">O projektu</a>
+                <a href="/app" class="nav-cta">Otvori aplikaciju</a>
+            </div>
+            <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="home">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <h1>Vaš prozor u svijet <span class="highlight">poljoprivrede, tehnologije i inovacija</span></h1>
+                <p class="hero-slogan">🌾 Welcome to CroAgroView – Your window into the world of agriculture, technology, and innovation!</p>
+                <div class="hero-buttons">
+                    <a href="/app" class="btn-primary">🚀 Otvori aplikaciju</a>
+                    <a href="#features" class="btn-secondary">📖 Saznaj više</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-logo-wrap">
+                    <img src="logo.png" alt="CroAgroView Logo">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+        <div class="stats-inner">
+            <div class="stat-item">
+                <h3>12</h3>
+                <p>Modula</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Besplatno</p>
+            </div>
+            <div class="stat-item">
+                <h3>0</h3>
+                <p>Potrebnih servera</p>
+            </div>
+            <div class="stat-item">
+                <h3>🇭🇷</h3>
+                <p>Made in Croatia</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <span class="section-tag">Značajke</span>
+            <h2>Sve što vam treba na jednom mjestu</h2>
+            <p>CroAgroView je dizajniran za hrvatske poljoprivrednike — jednostavan, brz i potpuno lokaliziran.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon fi-green">🌱</div>
+                <h3>Upravljanje kulturama</h3>
+                <p>Pratite sve svoje kulture, rokove sjetve i žetve, te planirajte unaprijed uz kalendar radova.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-blue">🌤️</div>
+                <h3>Vremenska prognoza</h3>
+                <p>Točna prognoza za vašu lokaciju sa satnim detaljima i predikcijom kiše.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-yellow">💰</div>
+                <h3>Cijene žitarica</h3>
+                <p>Ažurirane tržišne cijene žitarica za donošenje boljih poslovnih odluka.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-orange">🚜</div>
+                <h3>Registracija strojeva</h3>
+                <p>Evidencija svih strojeva i opreme s podacima o servisu i registraciji.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-purple">📊</div>
+                <h3>Analiza tla</h3>
+                <p>Zapisi analiza tla po parcelama za preciznu gnojidbu i bolje prinose.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-teal">🗺️</div>
+                <h3>Upravljanje parcelama</h3>
+                <p>GPS praćenje i evidencija parcela s vizualnim prikazom na karti.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULES -->
+    <section class="modules" id="modules">
+        <div class="section-header">
+            <span class="section-tag">Moduli</span>
+            <h2>12 modula za svaki aspekt gospodarstva</h2>
+            <p>Od planiranja do prodaje — sve na dlanu vaše ruke.</p>
+        </div>
+        <div class="modules-grid">
+            <div class="module-card">
+                <div class="module-emoji">🌱</div>
+                <div class="module-name">Plodored</div>
+                <div class="module-desc">Planiranje rotacije kultura</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🌤️</div>
+                <div class="module-name">Vremenska prognoza</div>
+                <div class="module-desc">Prognoza s predikcijom kiše</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">📋</div>
+                <div class="module-name">Bilješke</div>
+                <div class="module-desc">Brze bilješke s terena</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🧪</div>
+                <div class="module-name">Analiza tla</div>
+                <div class="module-desc">pH, hranjiva, preporuke</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">💧</div>
+                <div class="module-name">Navodnjavanje</div>
+                <div class="module-desc">Planovi i praćenje</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🐛</div>
+                <div class="module-name">Zaštita bilja</div>
+                <div class="module-desc">Evidencija tretmana</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">📅</div>
+                <div class="module-name">Kalendar radova</div>
+                <div class="module-desc">Sezonsko planiranje</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🚜</div>
+                <div class="module-name">Strojevi</div>
+                <div class="module-desc">Registracija i servisi</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🗺️</div>
+                <div class="module-name">Parcele</div>
+                <div class="module-desc">GPS evidencija zemljišta</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">🌿</div>
+                <div class="module-name">Mješovita sadnja</div>
+                <div class="module-desc">Kompatibilnost kultura</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">💰</div>
+                <div class="module-name">Cijene žitarica</div>
+                <div class="module-desc">Tržišne cijene u realnom vremenu</div>
+            </div>
+            <div class="module-card">
+                <div class="module-emoji">📊</div>
+                <div class="module-name">Financije</div>
+                <div class="module-desc">Prihodi, rashodi, analiza</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="about">
+        <div class="cta-inner">
+            <h2>Spremni za digitalnu poljoprivredu?</h2>
+            <p>CroAgroView je potpuno besplatan, radi offline i čuva vaše podatke lokalno na uređaju. Bez registracije, bez pretplate — samo otvorite i koristite.</p>
+            <div class="cta-buttons">
+                <a href="/app" class="btn-white">🚀 Otvori web aplikaciju</a>
+                <a href="https://play.google.com/store/apps/details?id=com.croagroview.app" class="btn-outline-white">📱 Google Play</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="logo.png" alt="CroAgroView">
+                <p>Moderna aplikacija za hrvatske poljoprivrednike. Tehnologija u službi tradicije.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Aplikacija</h4>
+                <a href="/app">Web aplikacija</a>
+                <a href="https://play.google.com/store/apps/details?id=com.croagroview.app">Google Play</a>
+                <a href="#features">Značajke</a>
+                <a href="#modules">Moduli</a>
+            </div>
+            <div class="footer-col">
+                <h4>Informacije</h4>
+                <a href="https://zvrhovski.github.io/croagroview-privacy/">Politika privatnosti</a>
+                <a href="mailto:info@croagroview.eu">Kontakt</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2025 CroAgroView. Sva prava pridržana.</span>
+            <span>Napravljeno s ❤️ u Hrvatskoj</span>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .module-card, .stat-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+
 </body>
 </html>
