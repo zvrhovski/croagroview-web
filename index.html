@@ -80,7 +80,7 @@
 
         /* HERO */
         .hero {
-            min-height: 100vh;
+            min-height: auto;
             display: flex;
             align-items: center;
             position: relative;
@@ -110,7 +110,7 @@
         .hero-inner {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 120px 24px 80px;
+            padding: 90px 24px 50px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 60px;
@@ -209,6 +209,69 @@
             0%, 100% { transform: scale(1); opacity: 0.5; }
             50% { transform: scale(1.05); opacity: 0.8; }
         }
+
+        /* YOUTUBE VIDEOS */
+        .videos {
+            padding: 80px 24px;
+            background: var(--white);
+        }
+        .videos-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .video-card {
+            background: var(--gray-light);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .video-card iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+            display: block;
+        }
+
+        /* SOCIAL LINKS */
+        .socials {
+            padding: 60px 24px;
+            background: var(--gray-light);
+        }
+        .socials-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .social-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        .social-btn.fb { background: #1877F2; }
+        .social-btn.ig { background: linear-gradient(135deg, #833AB4, #E4405F, #FCAF45); }
+        .social-btn.yt { background: #FF0000; }
+        .social-btn.tt { background: #000000; }
+        .social-icon { font-size: 1.2rem; }
 
         /* STATS BAR */
         .stats {
@@ -423,12 +486,14 @@
             .stats-inner { grid-template-columns: repeat(2, 1fr); }
             .features-grid { grid-template-columns: repeat(2, 1fr); }
             .modules-grid { grid-template-columns: repeat(3, 1fr); }
+            .videos-grid { grid-template-columns: repeat(2, 1fr); }
             .footer-inner { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
             .hero-text h1 { font-size: 2rem; }
             .features-grid { grid-template-columns: 1fr; }
             .modules-grid { grid-template-columns: repeat(2, 1fr); }
+            .videos-grid { grid-template-columns: 1fr; }
             .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 20px; }
             .stat-item h3 { font-size: 1.8rem; }
             .section-header h2 { font-size: 1.8rem; }
@@ -460,6 +525,7 @@
                 <span>CroAgroView</span>
             </a>
             <div class="nav-links" id="navLinks">
+                <a href="#videos">Video</a>
                 <a href="#features">Značajke</a>
                 <a href="#modules">Moduli</a>
                 <a href="#about">O projektu</a>
@@ -509,6 +575,49 @@
                 <h3>🇭🇷</h3>
                 <p>Made in Croatia</p>
             </div>
+        </div>
+    </section>
+
+    <!-- YOUTUBE VIDEOS -->
+    <section class="videos" id="videos">
+        <div class="section-header">
+            <span class="section-tag">Video sadržaj</span>
+            <h2>Pogledajte na YouTube kanalu</h2>
+            <p>Edukativni sadržaj, tutoriali i savjeti za moderne poljoprivrednike.</p>
+        </div>
+        <div class="videos-grid">
+            <div class="video-card">
+                <iframe src="https://www.youtube.com/embed/mpVfgl5lIYs" allowfullscreen loading="lazy"></iframe>
+            </div>
+            <div class="video-card">
+                <iframe src="https://www.youtube.com/embed/JmUNH_c-ZfQ" allowfullscreen loading="lazy"></iframe>
+            </div>
+            <div class="video-card">
+                <iframe src="https://www.youtube.com/embed/aOJe3JlAr9U" allowfullscreen loading="lazy"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOCIAL MEDIA -->
+    <section class="socials">
+        <div class="section-header">
+            <span class="section-tag">Pratite nas</span>
+            <h2>Budite u toku</h2>
+            <p>Pratite CroAgroView na društvenim mrežama za najnovije vijesti i savjete.</p>
+        </div>
+        <div class="socials-inner">
+            <a href="https://www.facebook.com/croagroview" target="_blank" class="social-btn fb">
+                <span class="social-icon">📘</span> Facebook
+            </a>
+            <a href="https://www.instagram.com/croagroview/" target="_blank" class="social-btn ig">
+                <span class="social-icon">📷</span> Instagram
+            </a>
+            <a href="https://www.youtube.com/@CroAgroView" target="_blank" class="social-btn yt">
+                <span class="social-icon">▶️</span> YouTube
+            </a>
+            <a href="https://www.tiktok.com/@croagroview" target="_blank" class="social-btn tt">
+                <span class="social-icon">🎵</span> TikTok
+            </a>
         </div>
     </section>
 
@@ -657,7 +766,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2025 CroAgroView. Sva prava pridržana.</span>
+            <span>&copy; 2026 CroAgroView. Sva prava pridržana.</span>
             <span>Napravljeno s ❤️ u Hrvatskoj</span>
         </div>
     </footer>
