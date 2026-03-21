@@ -29,18 +29,17 @@ body {
   max-width: 500px;
 }
 .games-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 25px;
-  flex-wrap: wrap;
-  justify-content: center;
   padding: 30px 20px;
-  max-width: 960px;
+  max-width: 1100px;
+  width: 100%;
 }
 .game-card {
   background: white;
   border-radius: 18px;
   padding: 30px;
-  width: 280px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   text-decoration: none;
@@ -121,6 +120,13 @@ body {
     <h2>Farma</h2>
     <p>Budi farmer! Obradi zemlju, posadi i požanji usjeve!</p>
     <span class="game-badge">2D igra</span>
+  </a>
+
+  <a href="tycoon/" class="game-card">
+    <div class="game-icon">💰</div>
+    <h2>Farm Tycoon</h2>
+    <p>Širi svoju farmu, kupuj opremu i životinje!</p>
+    <span class="game-badge">Strategija</span>
   </a>
 </div>
 

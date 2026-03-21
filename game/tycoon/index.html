@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm Tycoon - CroAgroView</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green-dark:#2E7D32;--green-mid:#4CAF50;--green-light:#8BC34A;
+  --gold:#FFC107;--gold-dark:#FF8F00;--bg:#f0f4e8;
+  --card:#fff;--card-hover:#f9fdf5;--text:#333;--text-light:#666;
+  --radius:14px;--shadow:0 3px 12px rgba(0,0,0,.08);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* TOP BAR */
+.topbar{
+  background:linear-gradient(135deg,var(--green-dark),var(--green-mid));
+  color:#fff;padding:12px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+.topbar .back{color:#fff;text-decoration:none;font-size:22px;margin-right:4px;}
+.topbar .title{font-size:20px;font-weight:700;margin-right:auto;}
+.stat-pill{
+  background:rgba(255,255,255,.18);border-radius:20px;padding:5px 14px;font-size:14px;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.stat-pill .emoji{font-size:16px;}
+.coins-display{
+  background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#333;
+  border-radius:20px;padding:5px 16px;font-weight:700;font-size:15px;
+  display:flex;align-items:center;gap:6px;
+  animation:coinPulse 2s ease-in-out infinite;
+}
+@keyframes coinPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* TABS */
+.tabs{
+  display:flex;gap:0;background:#fff;border-bottom:2px solid #e0e0e0;
+  overflow-x:auto;padding:0 10px;
+}
+.tab-btn{
+  padding:12px 18px;border:none;background:none;font-size:14px;font-weight:600;
+  cursor:pointer;color:var(--text-light);border-bottom:3px solid transparent;
+  transition:.2s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--green-mid);}
+.tab-btn.active{color:var(--green-dark);border-bottom-color:var(--green-dark);}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:16px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* FARM OVERVIEW */
+.farm-overview{
+  background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+  border-radius:var(--radius);padding:20px;margin-bottom:16px;
+  border:2px solid #c8e6c9;
+}
+.farm-overview h3{color:var(--green-dark);margin-bottom:12px;font-size:16px;}
+.farm-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.farm-cell{
+  width:48px;height:48px;background:#fff;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  border:2px solid #c8e6c9;position:relative;transition:.2s;
+}
+.farm-cell .progress-ring{
+  position:absolute;bottom:2px;left:4px;right:4px;height:4px;
+  background:#e0e0e0;border-radius:2px;overflow:hidden;
+}
+.farm-cell .progress-ring-fill{height:100%;background:var(--green-mid);border-radius:2px;transition:width .3s;}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.item-card{
+  background:var(--card);border-radius:var(--radius);padding:18px;
+  box-shadow:var(--shadow);transition:.2s;border:2px solid transparent;
+}
+.item-card:hover{border-color:var(--green-light);transform:translateY(-2px);}
+.item-card.locked{opacity:.5;pointer-events:none;}
+.item-card .card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.item-card .card-icon{font-size:36px;}
+.item-card .card-title{font-weight:700;font-size:16px;color:var(--green-dark);}
+.item-card .card-subtitle{font-size:12px;color:var(--text-light);}
+.item-card .card-stats{font-size:13px;color:var(--text-light);margin-bottom:12px;line-height:1.6;}
+.item-card .card-stats span{color:var(--text);font-weight:600;}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.owned-badge{
+  font-size:12px;color:var(--green-dark);background:#e8f5e9;
+  padding:3px 10px;border-radius:10px;font-weight:600;
+}
+.buy-btn{
+  padding:8px 18px;border:none;border-radius:10px;font-weight:700;font-size:14px;
+  cursor:pointer;transition:.2s;
+}
+.buy-btn.can-afford{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#333;}
+.buy-btn.can-afford:hover{transform:scale(1.05);box-shadow:0 3px 12px rgba(255,193,7,.4);}
+.buy-btn.cant-afford{background:#e0e0e0;color:#999;cursor:not-allowed;}
+
+/* MARKET */
+.market-prices{
+  background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px;
+}
+.market-prices h3{color:var(--green-dark);margin-bottom:12px;}
+.price-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;
+}
+.price-row:last-child{border:none;}
+.price-change{font-size:12px;font-weight:600;}
+.price-up{color:#4CAF50;}
+.price-down{color:#e53935;}
+.sell-btn{
+  padding:5px 14px;border:none;border-radius:8px;background:var(--green-mid);
+  color:#fff;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;
+}
+.sell-btn:hover{background:var(--green-dark);}
+.sell-btn:disabled{background:#ccc;cursor:not-allowed;}
+
+/* STATS & ACHIEVEMENTS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{
+  background:#fff;border-radius:var(--radius);padding:16px;text-align:center;
+  box-shadow:var(--shadow);
+}
+.stat-card .stat-val{font-size:24px;font-weight:700;color:var(--green-dark);}
+.stat-card .stat-label{font-size:12px;color:var(--text-light);margin-top:4px;}
+.achievements-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.achievement{
+  background:#fff;border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow);border-left:4px solid #e0e0e0;
+}
+.achievement.unlocked{border-left-color:var(--gold);background:#fffde7;}
+.achievement .ach-icon{font-size:28px;}
+.achievement .ach-name{font-weight:600;font-size:14px;}
+.achievement .ach-desc{font-size:12px;color:var(--text-light);}
+
+/* SEASON BANNER */
+.season-banner{
+  border-radius:var(--radius);padding:12px 18px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;
+}
+.season-spring{background:#e8f5e9;color:#2E7D32;}
+.season-summer{background:#fff8e1;color:#e65100;}
+.season-autumn{background:#fff3e0;color:#bf360c;}
+.season-winter{background:#e3f2fd;color:#1565c0;}
+
+/* OFFLINE MODAL */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;z-index:999;
+}
+.modal{
+  background:#fff;border-radius:18px;padding:30px;max-width:360px;width:90%;text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,.2);
+}
+.modal h2{color:var(--green-dark);margin-bottom:10px;}
+.modal .offline-coins{font-size:32px;color:var(--gold-dark);font-weight:700;margin:16px 0;}
+.modal button{
+  padding:10px 30px;border:none;border-radius:10px;font-size:16px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#333;cursor:pointer;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:20px;right:20px;background:#333;color:#fff;
+  padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;
+  z-index:200;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .topbar{gap:10px;padding:10px 12px;}
+  .topbar .title{font-size:16px;}
+  .stat-pill,.coins-display{font-size:12px;padding:4px 10px;}
+  .tab-btn{padding:10px 12px;font-size:13px;}
+  .main{padding:10px;}
+  .farm-cell{width:40px;height:40px;font-size:20px;}
+  .cards-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="/game/" class="back">&#8592;</a>
+  <span class="title">Farm Tycoon</span>
+  <div class="stat-pill"><span class="emoji">&#127793;</span> Razina <span id="levelDisplay">1</span></div>
+  <div class="stat-pill"><span class="emoji" id="seasonEmoji">&#127800;</span> <span id="seasonDisplay">Prolje&#263;e</span></div>
+  <div class="coins-display"><span>&#129689;</span> <span id="coinsDisplay">0</span></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="overview">&#127968; Pregled</button>
+  <button class="tab-btn" data-tab="fields">&#127806; Polja</button>
+  <button class="tab-btn" data-tab="animals">&#128004; &#381;ivotinje</button>
+  <button class="tab-btn" data-tab="equipment">&#9881;&#65039; Oprema</button>
+  <button class="tab-btn" data-tab="market">&#128202; Tr&#382;nica</button>
+  <button class="tab-btn" data-tab="stats">&#128200; Statistika</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="season-banner" id="seasonBanner">
+      <span id="seasonBannerEmoji">&#127800;</span>
+      <span id="seasonBannerText">Prolje&#263;e - Idealno za sadnju!</span>
+    </div>
+    <div class="farm-overview">
+      <h3>&#127757; Tvoja farma</h3>
+      <div class="farm-grid" id="farmGrid"></div>
+    </div>
+    <div class="farm-overview" style="border-color:#ffe0b2;background:linear-gradient(135deg,#fff8e1,#fff3e0);">
+      <h3>&#128230; Skladi&#353;te proizvoda</h3>
+      <div id="storageDisplay" style="font-size:14px;color:#555;line-height:1.8;"></div>
+    </div>
+  </div>
+
+  <!-- FIELDS TAB -->
+  <div class="tab-content" id="tab-fields">
+    <div class="season-banner" id="seasonBanner2"></div>
+    <div class="cards-grid" id="fieldsCards"></div>
+  </div>
+
+  <!-- ANIMALS TAB -->
+  <div class="tab-content" id="tab-animals">
+    <div class="cards-grid" id="animalsCards"></div>
+  </div>
+
+  <!-- EQUIPMENT TAB -->
+  <div class="tab-content" id="tab-equipment">
+    <div class="cards-grid" id="equipmentCards"></div>
+  </div>
+
+  <!-- MARKET TAB -->
+  <div class="tab-content" id="tab-market">
+    <div class="market-prices" id="marketPanel"></div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div class="tab-content" id="tab-stats">
+    <h3 style="color:var(--green-dark);margin-bottom:14px;">&#128200; Statistika</h3>
+    <div class="stats-grid" id="statsGrid"></div>
+    <h3 style="color:var(--green-dark);margin:20px 0 14px;">&#127942; Postignu&#263;a</h3>
+    <div class="achievements-list" id="achievementsList"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- OFFLINE MODAL (hidden by default) -->
+<div class="modal-overlay" id="offlineModal" style="display:none;">
+  <div class="modal">
+    <h2>&#128164; Dobro do&#353;li natrag!</h2>
+    <p>Dok ste bili odsutni, va&#353;a farma je zaradila:</p>
+    <div class="offline-coins" id="offlineCoins">0</div>
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">kovanica</p>
+    <button onclick="closeOfflineModal()">Preuzmi!</button>
+  </div>
+</div>
+
+<script>
+// ==================== GAME DATA ====================
+const CROPS = [
+  {id:'wheat',name:'P\u0161enica',emoji:'\uD83C\uDF3E',baseCost:50,costMult:1.12,baseIncome:5,growTime:10,seasonBonus:{spring:1.2,summer:1.0,autumn:0.8,winter:0.3}},
+  {id:'corn',name:'Kukuruz',emoji:'\uD83C\uDF3D',baseCost:120,costMult:1.14,baseIncome:12,growTime:15,seasonBonus:{spring:1.0,summer:1.3,autumn:0.9,winter:0.2},unlockLevel:2},
+  {id:'sunflower',name:'Suncokret',emoji:'\uD83C\uDF3B',baseCost:300,costMult:1.15,baseIncome:28,growTime:20,seasonBonus:{spring:1.1,summer:1.4,autumn:0.7,winter:0.1},unlockLevel:4},
+  {id:'tomato',name:'Raj\u010Dica',emoji:'\uD83C\uDF45',baseCost:800,costMult:1.16,baseIncome:65,growTime:25,seasonBonus:{spring:1.3,summer:1.2,autumn:0.5,winter:0.0},unlockLevel:6},
+  {id:'potato',name:'Krumpir',emoji:'\uD83E\uDD54',baseCost:2000,costMult:1.18,baseIncome:150,growTime:30,seasonBonus:{spring:1.1,summer:0.9,autumn:1.3,winter:0.4},unlockLevel:8},
+];
+
+const ANIMALS = [
+  {id:'chicken',name:'Koko\u0161i',emoji:'\uD83D\uDC14',product:'Jaja \uD83E\uDD5A',baseCost:200,costMult:1.13,baseIncome:8,prodTime:12,unlockLevel:2},
+  {id:'cow',name:'Krave',emoji:'\uD83D\uDC04',product:'Mlijeko \uD83E\uDD5B',baseCost:1500,costMult:1.15,baseIncome:40,prodTime:20,unlockLevel:5},
+  {id:'pig',name:'Svinje',emoji:'\uD83D\uDC37',product:'Meso \uD83E\uDD69',baseCost:3000,costMult:1.17,baseIncome:85,prodTime:30,unlockLevel:7},
+  {id:'sheep',name:'Ovce',emoji:'\uD83D\uDC11',product:'Vuna \uD83E\uDDF6',baseCost:5000,costMult:1.18,baseIncome:130,prodTime:35,unlockLevel:10},
+];
+
+const EQUIPMENT = [
+  {id:'tractor',name:'Traktor',emoji:'\uD83D\uDE9C',desc:'Br\u017Ea sadnja (-20% vrijeme rasta)',baseCost:5000,costMult:1.25,effect:'growSpeed',value:0.2,maxOwned:5,unlockLevel:3},
+  {id:'harvester',name:'Kombajn',emoji:'\uD83D\uDE9C',desc:'Automatska \u017Eetva (+30% prihod polja)',baseCost:15000,costMult:1.3,effect:'fieldIncome',value:0.3,maxOwned:5,unlockLevel:6},
+  {id:'irrigation',name:'Navodnjavanje',emoji:'\uD83D\uDCA7',desc:'Bolji prinosi (+25% svih prihoda)',baseCost:25000,costMult:1.3,effect:'allIncome',value:0.25,maxOwned:5,unlockLevel:8},
+  {id:'greenhouse',name:'Staklenik',emoji:'\uD83C\uDFE1',desc:'Uzgoj zimi (zimski bonus +0.5)',baseCost:50000,costMult:1.35,effect:'winterBonus',value:0.5,maxOwned:3,unlockLevel:10},
+];
+
+const SEASONS = [
+  {id:'spring',name:'Prolje\u0107e',emoji:'\uD83C\uDF38',desc:'Idealno za sadnju!',cssClass:'season-spring'},
+  {id:'summer',name:'Ljeto',emoji:'\u2600\uFE0F',desc:'Vrhunac rasta!',cssClass:'season-summer'},
+  {id:'autumn',name:'Jesen',emoji:'\uD83C\uDF42',desc:'Vrijeme \u017Eetve!',cssClass:'season-autumn'},
+  {id:'winter',name:'Zima',emoji:'\u2744\uFE0F',desc:'Smanjena proizvodnja.',cssClass:'season-winter'},
+];
+
+const ACHIEVEMENTS = [
+  {id:'first_field',name:'Prvi usjev',desc:'Kupi prvo polje',check:s=>getTotalOwned('crops')>=1},
+  {id:'five_fields',name:'Mali farmer',desc:'Posjeduj 5 polja',check:s=>getTotalOwned('crops')>=5},
+  {id:'first_animal',name:'Sto\u010Dar',desc:'Kupi prvu \u017Eivotinju',check:s=>getTotalOwned('animals')>=1},
+  {id:'rich',name:'Bogata\u0161',desc:'Zaraditi ukupno 100.000 kovanica',check:s=>s.totalEarned>=100000},
+  {id:'tycoon',name:'Tajkun',desc:'Zaraditi ukupno 1.000.000 kovanica',check:s=>s.totalEarned>=1000000},
+  {id:'level5',name:'Napredni farmer',desc:'Dosegni razinu 5',check:s=>s.level>=5},
+  {id:'level10',name:'Farmerski stru\u010Dnjak',desc:'Dosegni razinu 10',check:s=>s.level>=10},
+  {id:'all_crops',name:'Raznolikost',desc:'Posjeduj sve vrste usjeva',check:s=>CROPS.every(c=>s.crops[c.id]>0)},
+  {id:'all_animals',name:'No\u0161ina arka',desc:'Posjeduj sve vrste \u017Eivotinja',check:s=>ANIMALS.every(a=>s.animals[a.id]>0)},
+  {id:'equipment3',name:'Mehanizirano',desc:'Posjeduj 3 komada opreme',check:s=>getTotalOwned('equipment')>=3},
+  {id:'play1h',name:'Posve\u0107en farmer',desc:'Igraj 1 sat',check:s=>s.playTime>=3600},
+  {id:'millionaire',name:'Milijuna\u0161',desc:'Imaj 1.000.000 kovanica odjednom',check:s=>s.coins>=1000000},
+];
+
+const LEVEL_THRESHOLDS = [0,0,500,2000,5000,15000,40000,80000,150000,300000,600000,1200000,2500000,5000000];
+
+// ==================== STATE ====================
+let state = getDefaultState();
+
+function getDefaultState(){
+  return {
+    coins:100,totalEarned:0,totalSold:0,level:1,
+    crops:{},animals:{},equipment:{},
+    storage:{},
+    cropTimers:{},animalTimers:{},
+    marketPrices:{},
+    season:0,seasonTimer:0,
+    achievements:[],
+    playTime:0,lastSave:Date.now(),
+    startedAt:Date.now(),
+  };
+}
+
+function getTotalOwned(type){
+  const obj = state[type];
+  return Object.values(obj).reduce((a,b)=>a+b,0);
+}
+
+// ==================== SAVE / LOAD ====================
+function saveGame(){
+  state.lastSave = Date.now();
+  localStorage.setItem('farmTycoon',JSON.stringify(state));
+}
+
+function loadGame(){
+  const raw = localStorage.getItem('farmTycoon');
+  if(!raw) return false;
+  try{
+    const saved = JSON.parse(raw);
+    state = {...getDefaultState(),...saved};
+    return true;
+  }catch(e){return false;}
+}
+
+// ==================== ECONOMY ====================
+function getCost(item,type){
+  const owned = state[type][item.id]||0;
+  return Math.floor(item.baseCost * Math.pow(item.costMult, owned));
+}
+
+function getSeasonMultiplier(crop){
+  const s = SEASONS[state.season].id;
+  let mult = crop.seasonBonus[s] || 1;
+  if(s==='winter'){
+    const gh = state.equipment.greenhouse||0;
+    mult += gh * 0.5;
+  }
+  return mult;
+}
+
+function getFieldIncomeRate(crop){
+  let base = crop.baseIncome;
+  const seasonMult = getSeasonMultiplier(crop);
+  const harvesterBonus = 1 + (state.equipment.harvester||0)*0.3;
+  const irrigationBonus = 1 + (state.equipment.irrigation||0)*0.25;
+  return base * seasonMult * harvesterBonus * irrigationBonus;
+}
+
+function getGrowTime(crop){
+  const tractorBonus = 1 - (state.equipment.tractor||0)*0.2;
+  return Math.max(2, crop.growTime * Math.max(0.2, tractorBonus));
+}
+
+function getAnimalIncomeRate(animal){
+  const irrigationBonus = 1 + (state.equipment.irrigation||0)*0.25;
+  return animal.baseIncome * irrigationBonus;
+}
+
+function getIncomePerSecond(){
+  let ips = 0;
+  for(const crop of CROPS){
+    const owned = state.crops[crop.id]||0;
+    if(owned<=0) continue;
+    const income = getFieldIncomeRate(crop);
+    const gt = getGrowTime(crop);
+    ips += (income * owned) / gt;
+  }
+  for(const animal of ANIMALS){
+    const owned = state.animals[animal.id]||0;
+    if(owned<=0) continue;
+    const income = getAnimalIncomeRate(animal);
+    ips += (income * owned) / animal.prodTime;
+  }
+  return ips;
+}
+
+function generateMarketPrices(){
+  const products = [
+    {id:'wheat_p',name:'P\u0161enica',emoji:'\uD83C\uDF3E',base:5},
+    {id:'corn_p',name:'Kukuruz',emoji:'\uD83C\uDF3D',base:12},
+    {id:'sunflower_p',name:'Suncokret',emoji:'\uD83C\uDF3B',base:28},
+    {id:'tomato_p',name:'Raj\u010Dica',emoji:'\uD83C\uDF45',base:65},
+    {id:'potato_p',name:'Krumpir',emoji:'\uD83E\uDD54',base:150},
+    {id:'eggs',name:'Jaja',emoji:'\uD83E\uDD5A',base:8},
+    {id:'milk',name:'Mlijeko',emoji:'\uD83E\uDD5B',base:40},
+    {id:'meat',name:'Meso',emoji:'\uD83E\uDD69',base:85},
+    {id:'wool',name:'Vuna',emoji:'\uD83E\uDDF6',base:130},
+  ];
+  for(const p of products){
+    const fluct = 0.7 + Math.random()*0.6;
+    state.marketPrices[p.id] = {price:Math.floor(p.base*fluct),base:p.base,name:p.name,emoji:p.emoji};
+  }
+}
+
+// ==================== BUYING ====================
+function buyCrop(cropId){
+  const crop = CROPS.find(c=>c.id===cropId);
+  const cost = getCost(crop,'crops');
+  if(state.coins<cost) return;
+  state.coins -= cost;
+  state.crops[crop.id] = (state.crops[crop.id]||0)+1;
+  if(!state.cropTimers[crop.id]) state.cropTimers[crop.id] = 0;
+  showToast(`Kupljeno: ${crop.emoji} ${crop.name} polje!`);
+  checkAchievements();
+  renderAll();
+}
+
+function buyAnimal(animalId){
+  const animal = ANIMALS.find(a=>a.id===animalId);
+  const cost = getCost(animal,'animals');
+  if(state.coins<cost) return;
+  state.coins -= cost;
+  state.animals[animal.id] = (state.animals[animal.id]||0)+1;
+  if(!state.animalTimers[animal.id]) state.animalTimers[animal.id] = 0;
+  showToast(`Kupljeno: ${animal.emoji} ${animal.name}!`);
+  checkAchievements();
+  renderAll();
+}
+
+function buyEquipment(eqId){
+  const eq = EQUIPMENT.find(e=>e.id===eqId);
+  const owned = state.equipment[eq.id]||0;
+  if(owned >= eq.maxOwned) return;
+  const cost = getCost(eq,'equipment');
+  if(state.coins<cost) return;
+  state.coins -= cost;
+  state.equipment[eq.id] = owned+1;
+  showToast(`Kupljeno: ${eq.emoji} ${eq.name}!`);
+  checkAchievements();
+  renderAll();
+}
+
+// ==================== PRODUCTION TICK ====================
+function gameTick(dt){
+  // Season cycle (60s per season)
+  state.seasonTimer += dt;
+  if(state.seasonTimer >= 60){
+    state.seasonTimer -= 60;
+    state.season = (state.season+1)%4;
+    generateMarketPrices();
+    showToast(`${SEASONS[state.season].emoji} ${SEASONS[state.season].name} - ${SEASONS[state.season].desc}`);
+  }
+
+  // Crop production
+  for(const crop of CROPS){
+    const owned = state.crops[crop.id]||0;
+    if(owned<=0) continue;
+    if(!state.cropTimers[crop.id]) state.cropTimers[crop.id]=0;
+    state.cropTimers[crop.id] += dt;
+    const gt = getGrowTime(crop);
+    while(state.cropTimers[crop.id] >= gt){
+      state.cropTimers[crop.id] -= gt;
+      const income = getFieldIncomeRate(crop) * owned;
+      const storageKey = crop.id+'_p';
+      state.storage[storageKey] = (state.storage[storageKey]||0) + owned;
+    }
+  }
+
+  // Animal production
+  for(const animal of ANIMALS){
+    const owned = state.animals[animal.id]||0;
+    if(owned<=0) continue;
+    if(!state.animalTimers[animal.id]) state.animalTimers[animal.id]=0;
+    state.animalTimers[animal.id] += dt;
+    while(state.animalTimers[animal.id] >= animal.prodTime){
+      state.animalTimers[animal.id] -= animal.prodTime;
+      const storageKey = animal.id==='chicken'?'eggs':animal.id==='cow'?'milk':animal.id==='pig'?'meat':'wool';
+      state.storage[storageKey] = (state.storage[storageKey]||0) + owned;
+    }
+  }
+
+  // Level check
+  while(state.level < LEVEL_THRESHOLDS.length-1 && state.totalEarned >= LEVEL_THRESHOLDS[state.level+1]){
+    state.level++;
+    showToast(`\u2B50 Razina ${state.level}! Novi predmeti otklju\u010Dani!`);
+  }
+
+  state.playTime += dt;
+}
+
+// ==================== MARKET SELL ====================
+function sellProduct(storageKey){
+  const amount = state.storage[storageKey]||0;
+  if(amount<=0) return;
+  const priceInfo = state.marketPrices[storageKey];
+  if(!priceInfo) return;
+  const earned = amount * priceInfo.price;
+  state.coins += earned;
+  state.totalEarned += earned;
+  state.totalSold += amount;
+  state.storage[storageKey] = 0;
+  showToast(`Prodano: ${amount}x ${priceInfo.emoji} za ${formatNum(earned)} kovanica!`);
+  checkAchievements();
+  renderAll();
+}
+
+function sellAll(){
+  let totalEarned = 0;
+  for(const key of Object.keys(state.storage)){
+    const amount = state.storage[key]||0;
+    if(amount<=0) continue;
+    const priceInfo = state.marketPrices[key];
+    if(!priceInfo) continue;
+    const earned = amount * priceInfo.price;
+    state.coins += earned;
+    state.totalEarned += earned;
+    state.totalSold += amount;
+    totalEarned += earned;
+    state.storage[key] = 0;
+  }
+  if(totalEarned > 0){
+    showToast(`Prodano sve za ${formatNum(totalEarned)} kovanica!`);
+    checkAchievements();
+  }
+  renderAll();
+}
+
+// ==================== OFFLINE EARNINGS ====================
+function calculateOfflineEarnings(seconds){
+  const ips = getIncomePerSecond();
+  return Math.floor(ips * seconds * 0.5); // 50% efficiency offline
+}
+
+// ==================== ACHIEVEMENTS ====================
+function checkAchievements(){
+  for(const ach of ACHIEVEMENTS){
+    if(state.achievements.includes(ach.id)) continue;
+    if(ach.check(state)){
+      state.achievements.push(ach.id);
+      showToast(`\uD83C\uDFC6 Postignu\u0107e: ${ach.name}!`);
+    }
+  }
+}
+
+// ==================== RENDERING ====================
+function formatNum(n){
+  if(n>=1e9) return (n/1e9).toFixed(1)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toLocaleString('hr-HR');
+}
+
+function formatTime(s){
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  if(h>0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function renderTopBar(){
+  document.getElementById('coinsDisplay').textContent = formatNum(state.coins);
+  document.getElementById('levelDisplay').textContent = state.level;
+  const season = SEASONS[state.season];
+  document.getElementById('seasonDisplay').textContent = season.name;
+  document.getElementById('seasonEmoji').textContent = season.emoji;
+}
+
+function renderSeasonBanner(){
+  const season = SEASONS[state.season];
+  const b1 = document.getElementById('seasonBanner');
+  const b2 = document.getElementById('seasonBanner2');
+  const html = `<span>${season.emoji}</span><span>${season.name} - ${season.desc}</span>`;
+  b1.className = 'season-banner '+season.cssClass;
+  b1.innerHTML = html;
+  b2.className = 'season-banner '+season.cssClass;
+  b2.innerHTML = html;
+}
+
+function renderFarmGrid(){
+  const grid = document.getElementById('farmGrid');
+  let cells = '';
+  for(const crop of CROPS){
+    const owned = state.crops[crop.id]||0;
+    const gt = getGrowTime(crop);
+    const progress = state.cropTimers[crop.id] ? (state.cropTimers[crop.id]/gt*100) : 0;
+    for(let i=0;i<owned;i++){
+      cells += `<div class="farm-cell">${crop.emoji}<div class="progress-ring"><div class="progress-ring-fill" style="width:${Math.min(100,progress)}%"></div></div></div>`;
+    }
+  }
+  for(const animal of ANIMALS){
+    const owned = state.animals[animal.id]||0;
+    const progress = state.animalTimers[animal.id] ? (state.animalTimers[animal.id]/animal.prodTime*100) : 0;
+    for(let i=0;i<owned;i++){
+      cells += `<div class="farm-cell">${animal.emoji}<div class="progress-ring"><div class="progress-ring-fill" style="width:${Math.min(100,progress)}%"></div></div></div>`;
+    }
+  }
+  for(const eq of EQUIPMENT){
+    const owned = state.equipment[eq.id]||0;
+    for(let i=0;i<owned;i++){
+      cells += `<div class="farm-cell">${eq.emoji}</div>`;
+    }
+  }
+  if(!cells) cells = '<div style="color:#999;font-size:14px;padding:10px;">Kupi polja i \u017Eivotinje da po\u010Dne\u0161 farmati!</div>';
+  grid.innerHTML = cells;
+}
+
+function renderStorage(){
+  const el = document.getElementById('storageDisplay');
+  const items = [];
+  const productNames = {
+    wheat_p:'\uD83C\uDF3E P\u0161enica',corn_p:'\uD83C\uDF3D Kukuruz',sunflower_p:'\uD83C\uDF3B Suncokret',
+    tomato_p:'\uD83C\uDF45 Raj\u010Dica',potato_p:'\uD83E\uDD54 Krumpir',
+    eggs:'\uD83E\uDD5A Jaja',milk:'\uD83E\uDD5B Mlijeko',meat:'\uD83E\uDD69 Meso',wool:'\uD83E\uDDF6 Vuna'
+  };
+  for(const [key,amount] of Object.entries(state.storage)){
+    if(amount>0) items.push(`${productNames[key]||key}: <strong>${amount}</strong>`);
+  }
+  el.innerHTML = items.length ? items.join(' &nbsp;|&nbsp; ') : '<span style="color:#999;">Skladi\u0161te je prazno. Proizvodi \u0107e se pojaviti kad usjevi sazriju!</span>';
+}
+
+function renderFieldsTab(){
+  const container = document.getElementById('fieldsCards');
+  container.innerHTML = CROPS.map(crop=>{
+    const owned = state.crops[crop.id]||0;
+    const cost = getCost(crop,'crops');
+    const canAfford = state.coins >= cost;
+    const locked = crop.unlockLevel && state.level < crop.unlockLevel;
+    const income = getFieldIncomeRate(crop);
+    const gt = getGrowTime(crop);
+    const seasonMult = getSeasonMultiplier(crop);
+    return `
+    <div class="item-card${locked?' locked':''}">
+      <div class="card-head">
+        <div class="card-icon">${crop.emoji}</div>
+        <div>
+          <div class="card-title">${crop.name}</div>
+          <div class="card-subtitle">${locked?`Otklju\u010Daj na razini ${crop.unlockLevel}`:`Vrijeme rasta: ${gt.toFixed(1)}s`}</div>
+        </div>
+      </div>
+      <div class="card-stats">
+        Prihod po \u017Eetvi: <span>${formatNum(income)}</span><br>
+        Sezona bonus: <span>x${seasonMult.toFixed(1)}</span><br>
+        Prihod/s (po polju): <span>${(income/gt).toFixed(1)}</span>
+      </div>
+      <div class="card-bottom">
+        <span class="owned-badge">Posjeduje\u0161: ${owned}</span>
+        <button class="buy-btn ${canAfford&&!locked?'can-afford':'cant-afford'}" onclick="buyCrop('${crop.id}')"${locked||!canAfford?' disabled':''}>
+          \uD83D\uDCB0 ${formatNum(cost)}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAnimalsTab(){
+  const container = document.getElementById('animalsCards');
+  container.innerHTML = ANIMALS.map(animal=>{
+    const owned = state.animals[animal.id]||0;
+    const cost = getCost(animal,'animals');
+    const canAfford = state.coins >= cost;
+    const locked = animal.unlockLevel && state.level < animal.unlockLevel;
+    const income = getAnimalIncomeRate(animal);
+    return `
+    <div class="item-card${locked?' locked':''}">
+      <div class="card-head">
+        <div class="card-icon">${animal.emoji}</div>
+        <div>
+          <div class="card-title">${animal.name}</div>
+          <div class="card-subtitle">${locked?`Otklju\u010Daj na razini ${animal.unlockLevel}`:`Proizvodi: ${animal.product}`}</div>
+        </div>
+      </div>
+      <div class="card-stats">
+        Prihod po ciklusu: <span>${formatNum(income)}</span><br>
+        Ciklus: <span>${animal.prodTime}s</span><br>
+        Prihod/s (po \u017Eivotinji): <span>${(income/animal.prodTime).toFixed(1)}</span>
+      </div>
+      <div class="card-bottom">
+        <span class="owned-badge">Posjeduje\u0161: ${owned}</span>
+        <button class="buy-btn ${canAfford&&!locked?'can-afford':'cant-afford'}" onclick="buyAnimal('${animal.id}')"${locked||!canAfford?' disabled':''}>
+          \uD83D\uDCB0 ${formatNum(cost)}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderEquipmentTab(){
+  const container = document.getElementById('equipmentCards');
+  container.innerHTML = EQUIPMENT.map(eq=>{
+    const owned = state.equipment[eq.id]||0;
+    const maxed = owned >= eq.maxOwned;
+    const cost = getCost(eq,'equipment');
+    const canAfford = state.coins >= cost;
+    const locked = eq.unlockLevel && state.level < eq.unlockLevel;
+    return `
+    <div class="item-card${locked?' locked':''}">
+      <div class="card-head">
+        <div class="card-icon">${eq.emoji}</div>
+        <div>
+          <div class="card-title">${eq.name}</div>
+          <div class="card-subtitle">${locked?`Otklju\u010Daj na razini ${eq.unlockLevel}`:eq.desc}</div>
+        </div>
+      </div>
+      <div class="card-stats">
+        Maksimalno: <span>${eq.maxOwned}</span><br>
+        Bonus po komadu: <span>+${(eq.value*100).toFixed(0)}%</span>
+      </div>
+      <div class="card-bottom">
+        <span class="owned-badge">Posjeduje\u0161: ${owned}/${eq.maxOwned}</span>
+        ${maxed?'<span style="color:var(--green-dark);font-weight:700;font-size:13px;">MAX</span>':`
+        <button class="buy-btn ${canAfford&&!locked?'can-afford':'cant-afford'}" onclick="buyEquipment('${eq.id}')"${locked||!canAfford?' disabled':''}>
+          \uD83D\uDCB0 ${formatNum(cost)}
+        </button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMarketTab(){
+  const panel = document.getElementById('marketPanel');
+  let html = '<h3>\uD83D\uDCC8 Tr\u017Eni\u010Dne cijene <span style="font-size:12px;color:#999;font-weight:400;">(mijenjaju se svake sezone)</span></h3>';
+  html += '<div style="margin:12px 0 8px;"><button class="sell-btn" style="background:var(--gold);color:#333;padding:8px 20px;font-size:14px;" onclick="sellAll()">Prodaj sve</button></div>';
+
+  const storageKeys = Object.keys(state.marketPrices);
+  for(const key of storageKeys){
+    const p = state.marketPrices[key];
+    if(!p) continue;
+    const amount = state.storage[key]||0;
+    const diff = p.price - p.base;
+    const pctChange = ((diff/p.base)*100).toFixed(0);
+    const isUp = diff >= 0;
+    html += `
+    <div class="price-row">
+      <span>${p.emoji} ${p.name}</span>
+      <span>Cijena: <strong>${p.price}</strong> <span class="price-change ${isUp?'price-up':'price-down'}">${isUp?'\u25B2':'\\u25BC'}${Math.abs(pctChange)}%</span></span>
+      <span>Skladi\u0161te: <strong>${amount}</strong></span>
+      <button class="sell-btn" onclick="sellProduct('${key}')" ${amount<=0?'disabled':''}>Prodaj (${formatNum(amount * p.price)})</button>
+    </div>`;
+  }
+  panel.innerHTML = html;
+}
+
+function renderStatsTab(){
+  const ips = getIncomePerSecond();
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-val">${formatNum(state.coins)}</div><div class="stat-label">Kovanice</div></div>
+    <div class="stat-card"><div class="stat-val">${state.level}</div><div class="stat-label">Razina</div></div>
+    <div class="stat-card"><div class="stat-val">${formatNum(state.totalEarned)}</div><div class="stat-label">Ukupno zaradeno</div></div>
+    <div class="stat-card"><div class="stat-val">${formatNum(state.totalSold)}</div><div class="stat-label">Ukupno prodano</div></div>
+    <div class="stat-card"><div class="stat-val">${ips.toFixed(1)}/s</div><div class="stat-label">Prihod po sekundi</div></div>
+    <div class="stat-card"><div class="stat-val">${formatTime(state.playTime)}</div><div class="stat-label">Vrijeme igranja</div></div>
+    <div class="stat-card"><div class="stat-val">${getTotalOwned('crops')}</div><div class="stat-label">Polja</div></div>
+    <div class="stat-card"><div class="stat-val">${getTotalOwned('animals')}</div><div class="stat-label">\u017Divotinje</div></div>
+    <div class="stat-card"><div class="stat-val">${getTotalOwned('equipment')}</div><div class="stat-label">Oprema</div></div>
+  `;
+
+  const achList = document.getElementById('achievementsList');
+  achList.innerHTML = ACHIEVEMENTS.map(ach=>{
+    const unlocked = state.achievements.includes(ach.id);
+    return `
+    <div class="achievement${unlocked?' unlocked':''}">
+      <div class="ach-icon">${unlocked?'\uD83C\uDFC6':'\uD83D\uDD12'}</div>
+      <div>
+        <div class="ach-name">${ach.name}</div>
+        <div class="ach-desc">${ach.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){
+  renderTopBar();
+  renderSeasonBanner();
+  renderFarmGrid();
+  renderStorage();
+  renderFieldsTab();
+  renderAnimalsTab();
+  renderEquipmentTab();
+  renderMarketTab();
+  renderStatsTab();
+}
+
+// ==================== TABS ====================
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ==================== TOAST ====================
+let toastTimeout;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ==================== OFFLINE MODAL ====================
+function closeOfflineModal(){
+  document.getElementById('offlineModal').style.display='none';
+}
+
+// ==================== INIT ====================
+function init(){
+  const loaded = loadGame();
+  if(!loaded){
+    generateMarketPrices();
+    // Start with 1 wheat field
+    state.crops.wheat = 1;
+    state.cropTimers.wheat = 0;
+  } else {
+    // Calculate offline earnings
+    const now = Date.now();
+    const elapsed = (now - state.lastSave)/1000;
+    if(elapsed > 30){
+      const offlineCoins = calculateOfflineEarnings(elapsed);
+      if(offlineCoins > 0){
+        state.coins += offlineCoins;
+        state.totalEarned += offlineCoins;
+        document.getElementById('offlineCoins').textContent = formatNum(offlineCoins);
+        document.getElementById('offlineModal').style.display = 'flex';
+      }
+    }
+    if(!state.marketPrices || Object.keys(state.marketPrices).length===0){
+      generateMarketPrices();
+    }
+  }
+
+  renderAll();
+
+  // Game loop (10 ticks per second)
+  let lastTime = performance.now();
+  function loop(now){
+    const dt = (now - lastTime)/1000;
+    lastTime = now;
+    if(dt > 0 && dt < 5){
+      gameTick(dt);
+    }
+    // Light render update (just topbar and farm grid for performance)
+    renderTopBar();
+    renderFarmGrid();
+    renderStorage();
+    // Full render every 2 seconds
+    if(Math.floor(now/2000) !== Math.floor((now - dt*1000)/2000)){
+      renderAll();
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Auto-save every 15 seconds
+  setInterval(saveGame, 15000);
+
+  // Check achievements periodically
+  setInterval(checkAchievements, 5000);
+}
+
+init();
+</script>
+</body>
+</html>
