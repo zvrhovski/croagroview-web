@@ -69,12 +69,9 @@
 
         /* MAIN LAYOUT */
         .game-container {
-            max-width: 1100px;
+            max-width: 600px;
             margin: 0 auto;
             padding: 24px;
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 24px;
         }
 
         /* GAME INTRO */
@@ -92,6 +89,55 @@
             color: var(--gray);
             font-size: 0.95rem;
         }
+
+        /* VEGGIE DROPDOWN */
+        .veggie-picker {
+            margin-bottom: 16px;
+        }
+        .veggie-picker label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--green-dark);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .veggie-select-wrap {
+            position: relative;
+        }
+        .veggie-select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 2px solid var(--green-pale);
+            background: var(--white);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: var(--green-dark);
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .veggie-select:focus { border-color: var(--green-main); }
+        .veggie-select-wrap::after {
+            content: '▼';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: var(--gray);
+            pointer-events: none;
+        }
+        .veggie-count-info {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-align: center;
+        }
+        .veggie-count-info .full { color: var(--red); font-weight: 600; }
 
         /* GRID */
         .grid-wrapper {
@@ -150,11 +196,6 @@
             box-shadow: 0 2px 10px rgba(46,125,50,0.3);
         }
         .btn-calculate:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(46,125,50,0.4); }
-        .btn-calculate:disabled {
-            background: #ccc;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
 
         .garden-grid {
             display: grid;
@@ -184,17 +225,13 @@
             border-color: var(--green-pale);
             background: var(--white);
         }
-        .grid-cell.selected {
-            border-color: var(--green-main);
-            box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
-        }
         .grid-cell .remove-btn {
             display: none;
             position: absolute;
             top: -6px;
             right: -6px;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: var(--red);
             color: white;
@@ -227,50 +264,6 @@
             padding: 1px 4px;
         }
         .grid-cell.scored .cell-score { display: block; }
-
-        /* SIDEBAR - VEGETABLE PICKER */
-        .sidebar {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            height: fit-content;
-            position: sticky;
-            top: 80px;
-        }
-        .sidebar h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--green-dark);
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        .veggie-list {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-        .veggie-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            padding: 8px 4px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            text-align: center;
-        }
-        .veggie-item:hover { background: #E8F5E9; }
-        .veggie-item.active {
-            background: #E8F5E9;
-            border-color: var(--green-main);
-        }
-        .veggie-item .emoji { font-size: 1.6rem; }
-        .veggie-item .name { font-size: 0.65rem; font-weight: 600; color: var(--gray); line-height: 1.2; }
 
         /* RESULTS MODAL */
         .modal-overlay {
@@ -308,9 +301,7 @@
             gap: 20px;
             margin: 16px 0 24px;
         }
-        .breakdown-item {
-            text-align: center;
-        }
+        .breakdown-item { text-align: center; }
         .breakdown-num { font-size: 1.4rem; font-weight: 800; }
         .breakdown-label { font-size: 0.8rem; color: var(--gray); }
         .breakdown-good .breakdown-num { color: var(--green-main); }
@@ -356,27 +347,11 @@
         .legend-dot.bad { background: var(--red); }
 
         /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .game-container {
-                grid-template-columns: 1fr;
-            }
-            .sidebar {
-                position: static;
-                order: -1;
-            }
-            .veggie-list {
-                grid-template-columns: repeat(5, 1fr);
-                max-height: none;
-            }
-            .game-intro h1 { font-size: 1.4rem; }
-        }
         @media (max-width: 480px) {
-            .veggie-list {
-                grid-template-columns: repeat(4, 1fr);
-            }
             .game-container { padding: 12px; }
             .grid-wrapper { padding: 12px; }
             .grid-cell { font-size: 1.5rem; }
+            .game-intro h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -396,36 +371,40 @@
 
     <!-- GAME -->
     <div class="game-container">
-        <div>
-            <div class="game-intro">
-                <h1>Planiraj svoj vrt!</h1>
-                <p>Postavi povrce na grid i osvoji sto vise bodova kombiniranjem dobrih susjeda.</p>
-            </div>
-            <div class="grid-wrapper">
-                <div class="grid-controls">
-                    <div class="grid-size-selector">
-                        <button class="grid-size-btn active" onclick="setGridSize(4,4)">4x4</button>
-                        <button class="grid-size-btn" onclick="setGridSize(5,5)">5x5</button>
-                        <button class="grid-size-btn" onclick="setGridSize(6,6)">6x6</button>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn-action btn-clear" onclick="clearGrid()">Ocisti</button>
-                        <button class="btn-action btn-calculate" id="btnCalc" onclick="calculateScore()">Izracunaj bodove!</button>
-                    </div>
-                </div>
-                <div class="garden-grid" id="gardenGrid"></div>
-                <div class="legend">
-                    <div class="legend-item"><div class="legend-dot good"></div> Dobar susjed (+2)</div>
-                    <div class="legend-item"><div class="legend-dot neutral"></div> Neutralno (+1)</div>
-                    <div class="legend-item"><div class="legend-dot bad"></div> Los susjed (-1)</div>
-                </div>
-            </div>
+        <div class="game-intro">
+            <h1>Planiraj svoj vrt!</h1>
+            <p>Odaberi povrce iz izbornika, postavi na polje i osvoji bodove kombiniranjem dobrih susjeda. Svako povrce mozes staviti najvise 2 puta!</p>
         </div>
 
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <h3>Odaberi povrce</h3>
-            <div class="veggie-list" id="veggieList"></div>
+        <!-- VEGGIE DROPDOWN -->
+        <div class="veggie-picker">
+            <label>Odaberi povrce za sadnju:</label>
+            <div class="veggie-select-wrap">
+                <select class="veggie-select" id="veggieSelect" onchange="selectVeggie(this.value)">
+                    <option value="">-- Odaberi povrce --</option>
+                </select>
+            </div>
+            <div class="veggie-count-info" id="countInfo"></div>
+        </div>
+
+        <div class="grid-wrapper">
+            <div class="grid-controls">
+                <div class="grid-size-selector">
+                    <button class="grid-size-btn active" onclick="setGridSize(4,4)">4x4</button>
+                    <button class="grid-size-btn" onclick="setGridSize(5,5)">5x5</button>
+                    <button class="grid-size-btn" onclick="setGridSize(6,6)">6x6</button>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-action btn-clear" onclick="clearGrid()">Ocisti</button>
+                    <button class="btn-action btn-calculate" id="btnCalc" onclick="calculateScore()">Izracunaj bodove!</button>
+                </div>
+            </div>
+            <div class="garden-grid" id="gardenGrid"></div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot good"></div> Dobar susjed (+2)</div>
+                <div class="legend-item"><div class="legend-dot neutral"></div> Neutralno (+1)</div>
+                <div class="legend-item"><div class="legend-dot bad"></div> Los susjed (-1)</div>
+            </div>
         </div>
     </div>
 
@@ -458,7 +437,8 @@
     </div>
 
     <script>
-        // ─── VEGETABLE DATABASE ───
+        const MAX_PER_VEGGIE = 2;
+
         const VEGETABLES = [
             { id: 'rajcica', name: 'Rajcica', icon: '🍅', good: ['bosiljak','persin','salata','mrkva','luk','cesnjak','celer'], bad: ['krumpir','komarac','kupusnjace'] },
             { id: 'paprika', name: 'Paprika', icon: '🌶️', good: ['rajcica','bosiljak','luk','mrkva','salata'], bad: ['komarac','grah'] },
@@ -491,33 +471,69 @@
         let scored = false;
 
         function init() {
-            renderVeggieList();
+            renderDropdown();
             createGrid();
         }
 
-        function renderVeggieList() {
-            const list = document.getElementById('veggieList');
-            list.innerHTML = '';
+        function getVeggieCounts() {
+            const counts = {};
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
+                    if (grid[r][c]) {
+                        counts[grid[r][c]] = (counts[grid[r][c]] || 0) + 1;
+                    }
+                }
+            }
+            return counts;
+        }
+
+        function renderDropdown() {
+            const select = document.getElementById('veggieSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Odaberi povrce --</option>';
+            const counts = getVeggieCounts();
             VEGETABLES.forEach(v => {
-                const item = document.createElement('div');
-                item.className = 'veggie-item';
-                item.id = 'veggie-' + v.id;
-                item.innerHTML = '<span class="emoji">' + v.icon + '</span><span class="name">' + v.name + '</span>';
-                item.onclick = () => selectVeggie(v.id);
-                list.appendChild(item);
+                const count = counts[v.id] || 0;
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = v.icon + ' ' + v.name + (count > 0 ? ' (' + count + '/' + MAX_PER_VEGGIE + ')' : '');
+                if (count >= MAX_PER_VEGGIE) {
+                    opt.disabled = true;
+                    opt.textContent += ' ✓';
+                }
+                select.appendChild(opt);
             });
+            if (currentVal && !counts[currentVal] || (counts[currentVal] || 0) < MAX_PER_VEGGIE) {
+                select.value = currentVal;
+            }
+            updateCountInfo();
+        }
+
+        function updateCountInfo() {
+            const counts = getVeggieCounts();
+            if (!selectedVeggie) {
+                document.getElementById('countInfo').innerHTML = '';
+                return;
+            }
+            const v = VEGETABLES.find(x => x.id === selectedVeggie);
+            const count = counts[selectedVeggie] || 0;
+            if (count >= MAX_PER_VEGGIE) {
+                document.getElementById('countInfo').innerHTML = v.icon + ' ' + v.name + ': <span class="full">Maksimalan broj (' + MAX_PER_VEGGIE + '/' + MAX_PER_VEGGIE + ')</span>';
+            } else {
+                document.getElementById('countInfo').innerHTML = v.icon + ' ' + v.name + ': ' + count + '/' + MAX_PER_VEGGIE + ' postavljeno';
+            }
         }
 
         function selectVeggie(id) {
-            selectedVeggie = id;
-            document.querySelectorAll('.veggie-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('veggie-' + id).classList.add('active');
+            selectedVeggie = id || null;
+            updateCountInfo();
         }
 
         function createGrid() {
             grid = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
             scored = false;
             renderGrid();
+            renderDropdown();
             updateScore(0);
         }
 
@@ -544,16 +560,31 @@
         }
 
         function placeVeggie(r, c) {
-            if (!selectedVeggie) return;
+            if (!selectedVeggie) {
+                alert('Prvo odaberi povrce iz izbornika!');
+                return;
+            }
+            // Check max count
+            const counts = getVeggieCounts();
+            const currentInCell = grid[r][c];
+            const countOfSelected = counts[selectedVeggie] || 0;
+            // If replacing same veggie, no need to check
+            if (currentInCell !== selectedVeggie && countOfSelected >= MAX_PER_VEGGIE) {
+                const v = VEGETABLES.find(x => x.id === selectedVeggie);
+                alert(v.icon + ' ' + v.name + ' je vec postavljen ' + MAX_PER_VEGGIE + ' puta!');
+                return;
+            }
             if (scored) { scored = false; }
             grid[r][c] = selectedVeggie;
             renderGrid();
+            renderDropdown();
         }
 
         function removeCell(r, c) {
             grid[r][c] = null;
             if (scored) { scored = false; }
             renderGrid();
+            renderDropdown();
         }
 
         function setGridSize(rows, cols) {
@@ -594,7 +625,6 @@
             const cellScores = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
             const counted = new Set();
 
-            // Count filled cells
             let filledCount = 0;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
@@ -607,7 +637,6 @@
                 return;
             }
 
-            // Calculate scores
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
                     if (!grid[r][c]) continue;
@@ -636,7 +665,6 @@
             scored = true;
             updateScore(totalScore);
 
-            // Highlight cells
             const cells = document.querySelectorAll('.grid-cell');
             cells.forEach(cell => {
                 const r = parseInt(cell.dataset.row);
@@ -654,7 +682,6 @@
                 }
             });
 
-            // Show modal
             showResult(totalScore, goodPairs, neutralPairs, badPairs, filledCount);
         }
 
@@ -663,7 +690,6 @@
         }
 
         function showResult(score, good, neutral, bad, filled) {
-            const maxScore = good * 2 + neutral * 1 + bad * (-1);
             let emoji, title, message;
             const totalPairs = good + neutral + bad;
             const pct = totalPairs > 0 ? (good / totalPairs * 100) : 0;
@@ -700,7 +726,6 @@
             document.getElementById('resultModal').classList.remove('open');
         }
 
-        // Close modal on overlay click
         document.getElementById('resultModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
