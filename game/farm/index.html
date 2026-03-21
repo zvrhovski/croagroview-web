@@ -3,690 +3,1492 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Farma 3D - CroAgroView</title>
+<title>Farma - CroAgroView</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { overflow: hidden; background: #87CEEB; font-family: 'Segoe UI', sans-serif; touch-action: none; }
-canvas { display: block; }
+body {
+  overflow: hidden; background: #1a1a2e; font-family: 'Segoe UI', sans-serif;
+  touch-action: none; display: flex; justify-content: center; align-items: center;
+  width: 100vw; height: 100vh;
+}
+canvas { display: block; image-rendering: pixelated; cursor: crosshair; }
 
+/* HUD */
 #hud {
   position: fixed; top: 0; left: 0; right: 0;
   display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 12px 16px; pointer-events: none; z-index: 10;
+  padding: 10px 14px; pointer-events: none; z-index: 10;
 }
 #hud > * { pointer-events: auto; }
 .hud-box {
-  background: rgba(46,125,50,0.88); color: #fff; padding: 8px 16px;
-  border-radius: 12px; font-size: 15px; font-weight: 600;
-  backdrop-filter: blur(6px); line-height: 1.5;
+  background: rgba(30,60,20,0.88); color: #fff; padding: 7px 14px;
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  backdrop-filter: blur(6px); border: 2px solid rgba(139,195,74,0.5);
+  line-height: 1.5; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 #back-btn {
-  display: inline-block; background: rgba(46,125,50,0.88); color: #fff;
-  padding: 8px 14px; border-radius: 12px; text-decoration: none;
-  font-size: 14px; font-weight: 600; backdrop-filter: blur(6px);
-}
-#crop-selector {
-  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 8px; z-index: 10;
-}
-#crop-selector button {
-  padding: 8px 14px; border: 3px solid #2E7D32; border-radius: 12px;
-  background: rgba(255,255,255,0.9); font-size: 16px; cursor: pointer;
-  font-weight: 600; color: #2E7D32; transition: all 0.2s;
-}
-#crop-selector button.active {
-  background: #2E7D32; color: #fff;
+  display: inline-block; background: rgba(30,60,20,0.88); color: #fff;
+  padding: 7px 12px; border-radius: 10px; text-decoration: none;
+  font-size: 13px; font-weight: 600; backdrop-filter: blur(6px);
+  border: 2px solid rgba(139,195,74,0.5);
 }
 
-/* Mobile controls */
-#mobile-controls {
-  display: none; position: fixed; bottom: 10px; left: 0; right: 0;
-  z-index: 20; padding: 0 12px;
+/* Tool bar */
+#toolbar {
+  position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 10; background: rgba(30,60,20,0.9);
+  padding: 6px 10px; border-radius: 14px; border: 2px solid rgba(139,195,74,0.5);
+  backdrop-filter: blur(6px);
 }
-.mobile-row { display: flex; justify-content: space-between; align-items: center; }
-#joystick-area {
-  width: 120px; height: 120px; background: rgba(46,125,50,0.25);
-  border-radius: 50%; position: relative; border: 3px solid rgba(46,125,50,0.4);
+.tool-btn {
+  width: 56px; height: 56px; border: 3px solid #556B2F; border-radius: 10px;
+  background: rgba(60,90,40,0.8); font-size: 22px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #ddd; transition: all 0.15s; position: relative;
 }
-#joystick-thumb {
-  width: 46px; height: 46px; background: rgba(46,125,50,0.7);
-  border-radius: 50%; position: absolute;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
-  transition: none;
-}
-.action-btn {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: rgba(46,125,50,0.7); color: #fff; border: 3px solid rgba(255,255,255,0.5);
-  font-size: 22px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; -webkit-tap-highlight-color: transparent;
+.tool-btn span { font-size: 9px; margin-top: 1px; font-weight: 600; }
+.tool-btn.active { background: #2E7D32; border-color: #8BC34A; box-shadow: 0 0 12px rgba(139,195,74,0.5); }
+.tool-btn .key-hint {
+  position: absolute; top: -2px; right: -2px; background: #FFC107; color: #333;
+  font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
 }
 
-/* Instructions overlay */
+/* Seed submenu */
+#seed-menu {
+  position: fixed; bottom: 82px; left: 50%; transform: translateX(-50%);
+  display: none; gap: 6px; z-index: 11; background: rgba(30,60,20,0.92);
+  padding: 6px 10px; border-radius: 12px; border: 2px solid rgba(139,195,74,0.5);
+}
+#seed-menu.show { display: flex; }
+.seed-btn {
+  padding: 6px 12px; border: 2px solid #556B2F; border-radius: 8px;
+  background: rgba(60,90,40,0.8); font-size: 14px; cursor: pointer;
+  color: #ddd; font-weight: 600; transition: all 0.15s;
+}
+.seed-btn.active { background: #2E7D32; border-color: #8BC34A; }
+
+/* Shop overlay */
+#shop-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none;
+  align-items: center; justify-content: center; z-index: 50;
+}
+#shop-overlay.show { display: flex; }
+#shop-box {
+  background: linear-gradient(145deg, #2d4a1e, #1e3512); border-radius: 18px;
+  padding: 24px; max-width: 380px; width: 90%; border: 3px solid #8BC34A;
+  color: #fff;
+}
+#shop-box h2 { text-align: center; color: #8BC34A; margin-bottom: 14px; font-size: 22px; }
+.shop-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px; background: rgba(255,255,255,0.07); border-radius: 10px;
+  margin-bottom: 8px;
+}
+.shop-item-info { font-size: 14px; }
+.shop-item-info .count { color: #aaa; font-size: 12px; }
+.sell-btn {
+  padding: 6px 14px; background: #FFC107; color: #333; border: none;
+  border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;
+}
+.sell-btn:disabled { opacity: 0.3; cursor: default; }
+#shop-close {
+  display: block; margin: 14px auto 0; padding: 10px 30px; background: #556B2F;
+  color: #fff; border: none; border-radius: 10px; font-size: 15px;
+  font-weight: 700; cursor: pointer;
+}
+#shop-btn {
+  position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,60,20,0.88); color: #FFC107; padding: 6px 16px;
+  border-radius: 10px; border: 2px solid #FFC107; font-size: 14px;
+  font-weight: 700; cursor: pointer; z-index: 10; backdrop-filter: blur(6px);
+}
+
+/* Mobile joystick */
+#joystick-container {
+  display: none; position: fixed; bottom: 30px; left: 24px; z-index: 20;
+}
+#joystick-base {
+  width: 110px; height: 110px; background: rgba(46,125,50,0.2);
+  border-radius: 50%; border: 3px solid rgba(139,195,74,0.35);
+  position: relative;
+}
+#joystick-knob {
+  width: 44px; height: 44px; background: rgba(46,125,50,0.6);
+  border-radius: 50%; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Instructions */
 #instructions {
   position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
+  display: flex; align-items: center; justify-content: center; z-index: 100;
 }
 #instructions-box {
-  background: #fff; border-radius: 20px; padding: 30px; max-width: 420px;
-  width: 90%; text-align: center;
+  background: linear-gradient(145deg, #2d4a1e, #1e3512); border-radius: 20px;
+  padding: 28px; max-width: 430px; width: 92%; text-align: center;
+  border: 3px solid #8BC34A; color: #fff;
 }
-#instructions-box h2 { color: #2E7D32; margin-bottom: 15px; font-size: 24px; }
-#instructions-box p { color: #444; font-size: 14px; line-height: 1.7; margin-bottom: 6px; text-align: left; }
-#instructions-box .section { margin-bottom: 12px; }
-#instructions-box .section-title { color: #2E7D32; font-weight: 700; font-size: 15px; margin-bottom: 4px; text-align: left; }
+#instructions-box h2 { color: #8BC34A; margin-bottom: 14px; font-size: 24px; }
+#instructions-box p { color: #ccc; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 5px; }
+#instructions-box .section { margin-bottom: 10px; }
+#instructions-box .section-title { color: #FFC107; font-weight: 700; font-size: 14px; margin-bottom: 3px; text-align: left; }
 #start-btn {
-  margin-top: 18px; padding: 14px 40px; background: #2E7D32; color: #fff;
-  border: none; border-radius: 14px; font-size: 18px; font-weight: 700;
-  cursor: pointer;
+  margin-top: 16px; padding: 13px 38px; background: #2E7D32; color: #fff;
+  border: 2px solid #8BC34A; border-radius: 14px; font-size: 17px; font-weight: 700;
+  cursor: pointer; transition: background 0.2s;
 }
 #start-btn:hover { background: #1B5E20; }
 
+/* Day/night tint overlay */
+#day-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 5;
+  transition: background 2s;
+}
+
 @media (max-width: 768px) {
-  #mobile-controls { display: block; }
-  #crop-selector { bottom: 145px; }
-  .hud-box { font-size: 13px; padding: 6px 12px; }
+  #joystick-container { display: block; }
+  #toolbar { bottom: 12px; right: 12px; left: auto; transform: none; }
+  .tool-btn { width: 48px; height: 48px; font-size: 18px; }
+  .tool-btn .key-hint { display: none; }
+  .hud-box { font-size: 12px; padding: 5px 10px; }
+  #shop-btn { font-size: 12px; padding: 5px 12px; }
 }
 </style>
 </head>
 <body>
 
+<div id="day-overlay"></div>
+
 <div id="hud">
   <a id="back-btn" href="/game">&#8592; Igre</a>
+  <div>
+    <div class="hud-box" id="coin-box">Novci: 0</div>
+  </div>
   <div class="hud-box" id="score-box">Bodovi: 0</div>
-  <div class="hud-box" id="info-box">Usjevi: 0</div>
 </div>
 
-<div id="crop-selector">
-  <button class="active" data-crop="wheat">🌾 Pšenica</button>
-  <button data-crop="corn">🌽 Kukuruz</button>
-  <button data-crop="sunflower">🌻 Suncokret</button>
+<button id="shop-btn">Trgovina</button>
+
+<div id="seed-menu">
+  <button class="seed-btn active" data-seed="wheat">Psenica</button>
+  <button class="seed-btn" data-seed="corn">Kukuruz</button>
+  <button class="seed-btn" data-seed="sunflower">Suncokret</button>
 </div>
 
-<div id="mobile-controls">
-  <div class="mobile-row">
-    <div id="joystick-area">
-      <div id="joystick-thumb"></div>
+<div id="toolbar">
+  <button class="tool-btn active" data-tool="hoe" title="Motika">
+    <div class="key-hint">1</div>
+    &#9935;
+    <span>Motika</span>
+  </button>
+  <button class="tool-btn" data-tool="seed" title="Sjeme">
+    <div class="key-hint">2</div>
+    &#127793;
+    <span>Sjeme</span>
+  </button>
+  <button class="tool-btn" data-tool="water" title="Kanta">
+    <div class="key-hint">3</div>
+    &#128167;
+    <span>Kanta</span>
+  </button>
+  <button class="tool-btn" data-tool="sickle" title="Srp">
+    <div class="key-hint">4</div>
+    &#127807;
+    <span>Srp</span>
+  </button>
+</div>
+
+<div id="shop-overlay">
+  <div id="shop-box">
+    <h2>Trgovina</h2>
+    <div class="shop-item">
+      <div class="shop-item-info">Psenica <span class="count" id="inv-wheat">x0</span></div>
+      <button class="sell-btn" data-sell="wheat" disabled>Prodaj (10)</button>
     </div>
-    <button class="action-btn" id="action-btn">🌱</button>
+    <div class="shop-item">
+      <div class="shop-item-info">Kukuruz <span class="count" id="inv-corn">x0</span></div>
+      <button class="sell-btn" data-sell="corn" disabled>Prodaj (15)</button>
+    </div>
+    <div class="shop-item">
+      <div class="shop-item-info">Suncokret <span class="count" id="inv-sunflower">x0</span></div>
+      <button class="sell-btn" data-sell="sunflower" disabled>Prodaj (20)</button>
+    </div>
+    <button id="shop-close">Zatvori</button>
+  </div>
+</div>
+
+<div id="joystick-container">
+  <div id="joystick-base">
+    <div id="joystick-knob"></div>
   </div>
 </div>
 
 <div id="instructions">
   <div id="instructions-box">
-    <h2>🚜 Farma 3D</h2>
+    <h2>Farma</h2>
     <div class="section">
       <div class="section-title">Upravljanje:</div>
-      <p>🖥️ WASD / strelice - kretanje<br>
-      🖥️ Razmaknica - sadi / žanji<br>
-      📱 Joystick - kretanje<br>
-      📱 Gumb 🌱 - sadi / žanji</p>
+      <p>WASD / strelice - kretanje farmera<br>
+      Tipke 1-4 - odabir alata<br>
+      Klik / tap na polje - koristi alat<br>
+      Mobilno: joystick za kretanje</p>
     </div>
     <div class="section">
-      <div class="section-title">Kako igrati:</div>
-      <p>🚜 Vozi traktor po polju<br>
-      🌱 Odaberi usjeve i sadi ih na brazde<br>
-      ⏳ Pričekaj da usjevi narastu<br>
-      🌾 Žanji zrele usjeve za bodove!</p>
+      <div class="section-title">Alati:</div>
+      <p>1. Motika - pripremi zemlju za sadnju<br>
+      2. Sjeme - posadi usjeve (odaberi vrstu)<br>
+      3. Kanta - zalij za brzi rast (2x)<br>
+      4. Srp - pozanji zrele usjeve</p>
     </div>
     <div class="section">
-      <div class="section-title">Bodovi:</div>
-      <p>🌾 Pšenica = 10 bodova<br>
-      🌽 Kukuruz = 15 bodova<br>
-      🌻 Suncokret = 20 bodova</p>
+      <div class="section-title">Rast usjeva:</div>
+      <p>Sjeme &#8594; Klica &#8594; Rast &#8594; Zrelo<br>
+      Zaliveno = dvostruko brzi rast!<br>
+      Prodaj usjeve u trgovini za novce!</p>
     </div>
-    <button id="start-btn">Započni igru!</button>
+    <div class="section">
+      <div class="section-title">Cijene:</div>
+      <p>Psenica = 10 | Kukuruz = 15 | Suncokret = 20</p>
+    </div>
+    <button id="start-btn">Pocni igrati!</button>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<canvas id="game"></canvas>
+
 <script>
 (function() {
-  // --- GAME STATE ---
-  let score = 0;
-  let cropCount = 0;
-  let selectedCrop = 'wheat';
-  let gameStarted = false;
-  const crops = [];
-  const keys = {};
-  let joystickX = 0, joystickY = 0;
+'use strict';
 
-  const FIELD_SIZE = 40;
-  const ROW_SPACING = 3;
-  const CROP_SPACING = 2.5;
-  const GROW_TIME = [4000, 7000, 12000]; // ms per stage
-  const CROP_POINTS = { wheat: 10, corn: 15, sunflower: 20 };
-  const CROP_COLORS = {
-    wheat:     { stem: 0x7CB342, head: 0xFFD54F },
-    corn:      { stem: 0x558B2F, head: 0xFDD835 },
-    sunflower: { stem: 0x33691E, head: 0xFF8F00 }
-  };
+// ========== CONSTANTS ==========
+const TILE = 32;
+const GRID_W = 20;
+const GRID_H = 16;
+const MAP_W = GRID_W * TILE;
+const MAP_H = GRID_H * TILE;
+const PLAYER_SPEED = 2.2;
+const GROW_BASE = 8000; // ms per growth stage
+const CROP_PRICES = { wheat: 10, corn: 15, sunflower: 20 };
 
-  // --- THREE.JS SETUP ---
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87CEEB);
-  scene.fog = new THREE.Fog(0x87CEEB, 50, 120);
+// Map tile types
+const T_GRASS = 0, T_DIRT = 1, T_WATER = 2, T_PATH = 3, T_FENCE = 4, T_TREE = 5, T_FLOWER = 6, T_TILLED = 7;
 
-  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  document.body.appendChild(renderer.domElement);
+// Crop growth stages
+const STAGE_SEED = 0, STAGE_SPROUT = 1, STAGE_GROWING = 2, STAGE_MATURE = 3;
 
-  // Lights
-  const ambLight = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(ambLight);
-  const sunLight = new THREE.DirectionalLight(0xFFF8E1, 1.0);
-  sunLight.position.set(30, 40, 20);
-  sunLight.castShadow = true;
-  sunLight.shadow.mapSize.set(1024, 1024);
-  sunLight.shadow.camera.left = -50;
-  sunLight.shadow.camera.right = 50;
-  sunLight.shadow.camera.top = 50;
-  sunLight.shadow.camera.bottom = -50;
-  scene.add(sunLight);
+// ========== GAME STATE ==========
+let gameStarted = false;
+let score = 0;
+let coins = 0;
+let currentTool = 'hoe';
+let selectedSeed = 'wheat';
+let inventory = { wheat: 0, corn: 0, sunflower: 0 };
 
-  // Sun sphere
-  const sunGeo = new THREE.SphereGeometry(3, 16, 16);
-  const sunMat = new THREE.MeshBasicMaterial({ color: 0xFFEB3B });
-  const sunMesh = new THREE.Mesh(sunGeo, sunMat);
-  sunMesh.position.set(30, 40, 20);
-  scene.add(sunMesh);
+// Player
+const player = {
+  x: 10 * TILE + TILE/2, y: 8 * TILE + TILE/2,
+  dir: 0, // 0=down,1=left,2=right,3=up
+  frame: 0, animTimer: 0, moving: false,
+  actionTimer: 0
+};
 
-  // Ground
-  const groundGeo = new THREE.PlaneGeometry(100, 100);
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+// Input
+const keys = {};
+let joystickX = 0, joystickY = 0;
+let mouseGridX = -1, mouseGridY = -1;
+let clickAction = false;
 
-  // Field rows (darker furrows)
-  for (let z = -FIELD_SIZE / 2; z <= FIELD_SIZE / 2; z += ROW_SPACING) {
-    const rowGeo = new THREE.PlaneGeometry(FIELD_SIZE, 0.8);
-    const rowMat = new THREE.MeshLambertMaterial({ color: 0x5D4037 });
-    const row = new THREE.Mesh(rowGeo, rowMat);
-    row.rotation.x = -Math.PI / 2;
-    row.position.set(0, 0.01, z);
-    row.receiveShadow = true;
-    scene.add(row);
+// Day/night
+let dayTime = 0; // 0-1 full cycle
+const DAY_CYCLE_MS = 180000; // 3 minutes
+
+// Particles
+const particles = [];
+
+// ========== MAP GENERATION ==========
+const map = [];
+const crops = []; // 2D: crops[y][x] = { type, stage, watered, growTimer } or null
+
+// Initialize map
+for (let y = 0; y < GRID_H; y++) {
+  map[y] = [];
+  crops[y] = [];
+  for (let x = 0; x < GRID_W; x++) {
+    map[y][x] = T_GRASS;
+    crops[y][x] = null;
   }
+}
 
-  // Fence posts
-  function createFence() {
-    const fenceMat = new THREE.MeshLambertMaterial({ color: 0x795548 });
-    const postGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.8, 6);
-    const railGeo = new THREE.BoxGeometry(3, 0.1, 0.1);
-    for (let side = 0; side < 4; side++) {
-      for (let i = -FIELD_SIZE / 2; i <= FIELD_SIZE / 2; i += 3) {
-        const post = new THREE.Mesh(postGeo, fenceMat);
-        const rail1 = new THREE.Mesh(railGeo, fenceMat);
-        const rail2 = new THREE.Mesh(railGeo, fenceMat);
-        if (side === 0) { post.position.set(i, 0.9, -FIELD_SIZE / 2 - 1); rail1.position.set(i, 0.6, -FIELD_SIZE / 2 - 1); rail2.position.set(i, 1.2, -FIELD_SIZE / 2 - 1); }
-        else if (side === 1) { post.position.set(i, 0.9, FIELD_SIZE / 2 + 1); rail1.position.set(i, 0.6, FIELD_SIZE / 2 + 1); rail2.position.set(i, 1.2, FIELD_SIZE / 2 + 1); }
-        else if (side === 2) { post.position.set(-FIELD_SIZE / 2 - 1, 0.9, i); rail1.position.set(-FIELD_SIZE / 2 - 1, 0.6, i); rail1.rotation.y = Math.PI / 2; rail2.position.set(-FIELD_SIZE / 2 - 1, 1.2, i); rail2.rotation.y = Math.PI / 2; }
-        else { post.position.set(FIELD_SIZE / 2 + 1, 0.9, i); rail1.position.set(FIELD_SIZE / 2 + 1, 0.6, i); rail1.rotation.y = Math.PI / 2; rail2.position.set(FIELD_SIZE / 2 + 1, 1.2, i); rail2.rotation.y = Math.PI / 2; }
-        post.castShadow = true;
-        scene.add(post); scene.add(rail1); scene.add(rail2);
+// Water (right side - pond/river)
+for (let y = 3; y < 13; y++) {
+  map[y][GRID_W-1] = T_WATER;
+  map[y][GRID_W-2] = T_WATER;
+  if (y > 4 && y < 11) map[y][GRID_W-3] = T_WATER;
+}
+
+// Path from left to center
+for (let x = 0; x < 10; x++) {
+  map[8][x] = T_PATH;
+  map[7][x] = T_PATH;
+}
+// Path down the middle
+for (let y = 2; y < 14; y++) {
+  map[y][9] = T_PATH;
+  map[y][10] = T_PATH;
+}
+
+// Fence around farm area
+for (let x = 2; x < 9; x++) {
+  map[2][x] = T_FENCE;
+  map[13][x] = T_FENCE;
+}
+for (let y = 2; y < 14; y++) {
+  map[y][2] = T_FENCE;
+  map[y][8] = T_FENCE;
+}
+// Gate openings
+map[7][2] = T_PATH;
+map[8][2] = T_PATH;
+map[7][8] = T_PATH;
+map[8][8] = T_PATH;
+
+// Trees around edges
+const treePositions = [];
+for (let x = 0; x < GRID_W; x++) {
+  if (map[0][x] === T_GRASS) { map[0][x] = T_TREE; treePositions.push({x,y:0}); }
+  if (map[GRID_H-1][x] === T_GRASS) { map[GRID_H-1][x] = T_TREE; treePositions.push({x,y:GRID_H-1}); }
+}
+for (let y = 1; y < GRID_H-1; y++) {
+  if (map[y][0] === T_GRASS) { map[y][0] = T_TREE; treePositions.push({x:0,y}); }
+  if (map[y][1] === T_GRASS && Math.random() < 0.4) { map[y][1] = T_TREE; treePositions.push({x:1,y}); }
+}
+// Some extra trees near water
+for (let y = 2; y < 14; y++) {
+  if (map[y][GRID_W-4] === T_GRASS && Math.random() < 0.3) { map[y][GRID_W-4] = T_TREE; treePositions.push({x:GRID_W-4,y}); }
+}
+
+// Flowers scattered on grass
+for (let y = 1; y < GRID_H-1; y++) {
+  for (let x = 1; x < GRID_W-1; x++) {
+    if (map[y][x] === T_GRASS && Math.random() < 0.08) {
+      map[y][x] = T_FLOWER;
+    }
+  }
+}
+
+// Dirt area inside fence (farmable)
+for (let y = 3; y < 13; y++) {
+  for (let x = 3; x < 8; x++) {
+    if (map[y][x] === T_GRASS || map[y][x] === T_FLOWER) {
+      map[y][x] = T_DIRT;
+    }
+  }
+}
+
+// Also make area right of path farmable
+for (let y = 3; y < 7; y++) {
+  for (let x = 11; x < 16; x++) {
+    if (map[y][x] === T_GRASS || map[y][x] === T_FLOWER) {
+      map[y][x] = T_DIRT;
+    }
+  }
+}
+for (let y = 9; y < 13; y++) {
+  for (let x = 11; x < 16; x++) {
+    if (map[y][x] === T_GRASS || map[y][x] === T_FLOWER) {
+      map[y][x] = T_DIRT;
+    }
+  }
+}
+
+// Pre-generate grass variation noise
+const grassNoise = [];
+for (let y = 0; y < GRID_H; y++) {
+  grassNoise[y] = [];
+  for (let x = 0; x < GRID_W; x++) {
+    grassNoise[y][x] = Math.random();
+  }
+}
+
+// Tree foliage offsets (random for visual variety)
+const treeData = treePositions.map(t => ({
+  x: t.x, y: t.y,
+  size: 0.7 + Math.random() * 0.5,
+  hue: Math.random() * 20 - 10
+}));
+
+// ========== CANVAS SETUP ==========
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let scale = 1;
+let offsetX = 0, offsetY = 0;
+
+function resize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  scale = Math.min(w / MAP_W, h / MAP_H);
+  // On mobile make it slightly bigger
+  if (w < 768) scale = Math.max(scale, Math.min(w / MAP_W, h / MAP_H) * 1.0);
+  canvas.width = w;
+  canvas.height = h;
+  offsetX = (w - MAP_W * scale) / 2;
+  offsetY = (h - MAP_H * scale) / 2;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ========== DRAWING HELPERS ==========
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
+}
+
+function drawCircle(x, y, r, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function screenX(wx) { return offsetX + wx * scale; }
+function screenY(wy) { return offsetY + wy * scale; }
+function screenS(s) { return s * scale; }
+
+// Get tile coords from screen coords
+function screenToGrid(sx, sy) {
+  const wx = (sx - offsetX) / scale;
+  const wy = (sy - offsetY) / scale;
+  return { gx: Math.floor(wx / TILE), gy: Math.floor(wy / TILE) };
+}
+
+// ========== TILE RENDERING ==========
+function getGrassColor(x, y) {
+  const n = grassNoise[y][x];
+  if (n < 0.15) return '#3d8c3d';
+  if (n < 0.4) return '#4CAF50';
+  if (n < 0.7) return '#45a045';
+  return '#5cb85c';
+}
+
+function drawTile(gx, gy) {
+  const px = gx * TILE;
+  const py = gy * TILE;
+  const sx = screenX(px);
+  const sy = screenY(py);
+  const ss = screenS(TILE);
+  const tile = map[gy][gx];
+
+  switch (tile) {
+    case T_GRASS:
+    case T_FLOWER:
+      ctx.fillStyle = getGrassColor(gx, gy);
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Grass blades detail
+      if (grassNoise[gy][gx] > 0.6) {
+        ctx.fillStyle = '#66bb6a';
+        ctx.fillRect(sx + ss*0.2, sy + ss*0.3, ss*0.08, ss*0.25);
+        ctx.fillRect(sx + ss*0.6, sy + ss*0.5, ss*0.08, ss*0.2);
       }
-    }
+      // Flowers
+      if (tile === T_FLOWER) {
+        const ft = (Date.now() * 0.001 + gx * 3 + gy * 7) % 6;
+        const colors = ['#ff6b9d','#ffeb3b','#ff9800','#e91e63','#9c27b0','#fff'];
+        const fc = colors[Math.floor(ft)];
+        drawCircle(sx + ss*0.5, sy + ss*0.4, ss*0.1, fc);
+        drawCircle(sx + ss*0.3, sy + ss*0.6, ss*0.07, '#ffeb3b');
+        ctx.fillStyle = '#2E7D32';
+        ctx.fillRect(sx + ss*0.48, sy + ss*0.5, ss*0.04, ss*0.3);
+      }
+      break;
+
+    case T_DIRT:
+      ctx.fillStyle = '#8B6914';
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Dirt texture
+      ctx.fillStyle = '#7a5c10';
+      if (grassNoise[gy][gx] > 0.5) {
+        ctx.fillRect(sx + ss*0.2, sy + ss*0.3, ss*0.15, ss*0.08);
+        ctx.fillRect(sx + ss*0.6, sy + ss*0.7, ss*0.12, ss*0.06);
+      }
+      break;
+
+    case T_TILLED:
+      ctx.fillStyle = crops[gy] && crops[gy][gx] && crops[gy][gx].watered ? '#4a3510' : '#6B4E12';
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Furrow lines
+      ctx.strokeStyle = crops[gy] && crops[gy][gx] && crops[gy][gx].watered ? '#3a2a08' : '#5a4010';
+      ctx.lineWidth = Math.max(1, ss * 0.04);
+      for (let i = 0; i < 4; i++) {
+        const ly = sy + ss * (0.15 + i * 0.22);
+        ctx.beginPath();
+        ctx.moveTo(sx + ss*0.05, ly);
+        ctx.lineTo(sx + ss*0.95, ly);
+        ctx.stroke();
+      }
+      break;
+
+    case T_WATER:
+      // Animated water
+      const wt = Date.now() * 0.001;
+      const wb = Math.sin(wt + gx * 0.8 + gy * 0.5) * 10;
+      const r = 30 + wb|0;
+      const g = 100 + wb|0;
+      const b = 200 + Math.abs(wb)|0;
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Water sparkle
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      const sparkle = Math.sin(wt * 2 + gx * 5) * 0.5 + 0.5;
+      if (sparkle > 0.7) {
+        ctx.fillRect(sx + ss*0.3, sy + ss*0.2, ss*0.15, ss*0.08);
+      }
+      break;
+
+    case T_PATH:
+      ctx.fillStyle = '#c4a265';
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Path texture dots
+      ctx.fillStyle = '#b89958';
+      if (grassNoise[gy][gx] > 0.4) {
+        ctx.fillRect(sx + ss*0.15, sy + ss*0.2, ss*0.1, ss*0.08);
+        ctx.fillRect(sx + ss*0.65, sy + ss*0.65, ss*0.08, ss*0.1);
+      }
+      ctx.fillStyle = '#d4b275';
+      ctx.fillRect(sx + ss*0.4, sy + ss*0.4, ss*0.08, ss*0.06);
+      break;
+
+    case T_FENCE:
+      // Ground under fence
+      ctx.fillStyle = getGrassColor(gx, gy);
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      // Fence post
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(sx + ss*0.35, sy + ss*0.1, ss*0.3, ss*0.8);
+      // Horizontal rails
+      ctx.fillStyle = '#A0522D';
+      ctx.fillRect(sx, sy + ss*0.25, ss, ss*0.12);
+      ctx.fillRect(sx, sy + ss*0.6, ss, ss*0.12);
+      // Post top
+      ctx.fillStyle = '#9a6030';
+      ctx.fillRect(sx + ss*0.33, sy + ss*0.05, ss*0.34, ss*0.12);
+      break;
+
+    case T_TREE:
+      // Ground under tree
+      ctx.fillStyle = getGrassColor(gx, gy);
+      ctx.fillRect(sx, sy, ss + 1, ss + 1);
+      break;
   }
-  createFence();
+}
 
-  // Trees around the field
-  function createTree(x, z) {
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.3, 0.4, 3, 8),
-      new THREE.MeshLambertMaterial({ color: 0x5D4037 })
-    );
-    trunk.position.set(x, 1.5, z);
-    trunk.castShadow = true;
-    scene.add(trunk);
-    const leaves = new THREE.Mesh(
-      new THREE.SphereGeometry(1.8, 8, 6),
-      new THREE.MeshLambertMaterial({ color: 0x2E7D32 })
-    );
-    leaves.position.set(x, 3.8, z);
-    leaves.castShadow = true;
-    scene.add(leaves);
-  }
-  for (let i = -18; i <= 18; i += 6) {
-    createTree(i, -FIELD_SIZE / 2 - 5);
-    createTree(i, FIELD_SIZE / 2 + 5);
-    createTree(-FIELD_SIZE / 2 - 5, i);
-    createTree(FIELD_SIZE / 2 + 5, i);
-  }
-
-  // Clouds
-  function createCloud(x, y, z) {
-    const g = new THREE.Group();
-    const mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-    for (let i = 0; i < 5; i++) {
-      const s = new THREE.Mesh(new THREE.SphereGeometry(1.2 + Math.random(), 8, 6), mat);
-      s.position.set(i * 1.5 - 3, Math.random() * 0.5, Math.random() * 1 - 0.5);
-      g.add(s);
-    }
-    g.position.set(x, y, z);
-    scene.add(g);
-    return g;
-  }
-  const clouds = [];
-  for (let i = 0; i < 8; i++) {
-    clouds.push(createCloud(Math.random() * 80 - 40, 25 + Math.random() * 10, Math.random() * 80 - 40));
-  }
-
-  // --- TRACTOR ---
-  const tractor = new THREE.Group();
-
-  // Body
-  const bodyGeo = new THREE.BoxGeometry(1.8, 1.2, 2.8);
-  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x2E7D32 });
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 1.2;
-  body.castShadow = true;
-  tractor.add(body);
-
-  // Cabin
-  const cabinGeo = new THREE.BoxGeometry(1.4, 1.2, 1.4);
-  const cabinMat = new THREE.MeshLambertMaterial({ color: 0x8BC34A });
-  const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-  cabin.position.set(0, 2.2, -0.4);
-  cabin.castShadow = true;
-  tractor.add(cabin);
-
-  // Cabin window
-  const windowGeo = new THREE.BoxGeometry(1.42, 0.6, 0.05);
-  const windowMat = new THREE.MeshLambertMaterial({ color: 0xB3E5FC });
-  const windowFront = new THREE.Mesh(windowGeo, windowMat);
-  windowFront.position.set(0, 2.4, 0.32);
-  tractor.add(windowFront);
-
-  // Wheels
-  const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 12);
-  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-  const smallWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.35, 12);
-  [[-1, 0.5, 1], [1, 0.5, 1], [-1, 0.5, -1], [1, 0.5, -1]].forEach(([x, y, z], i) => {
-    const geo = i < 2 ? smallWheelGeo : wheelGeo;
-    const w = new THREE.Mesh(geo, wheelMat);
-    w.rotation.z = Math.PI / 2;
-    w.position.set(x, y, z);
-    w.castShadow = true;
-    tractor.add(w);
+function drawTrees() {
+  // Draw trees on top (for depth)
+  treeData.forEach(t => {
+    const sx = screenX(t.x * TILE);
+    const sy = screenY(t.y * TILE);
+    const ss = screenS(TILE);
+    const sz = t.size;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(sx + ss*0.5, sy + ss*0.9, ss*0.35*sz, ss*0.12, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Trunk
+    ctx.fillStyle = '#5D4037';
+    ctx.fillRect(sx + ss*0.38, sy + ss*0.35, ss*0.24, ss*0.55);
+    // Trunk highlight
+    ctx.fillStyle = '#6D4C41';
+    ctx.fillRect(sx + ss*0.42, sy + ss*0.4, ss*0.08, ss*0.45);
+    // Foliage (layered circles)
+    const gv = t.hue;
+    ctx.fillStyle = `rgb(${35+gv},${110+gv},${35+gv})`;
+    drawCircle(sx + ss*0.5, sy + ss*0.2, ss*0.38*sz, `rgb(${35+gv},${110+gv},${35+gv})`);
+    drawCircle(sx + ss*0.32, sy + ss*0.32, ss*0.25*sz, `rgb(${42+gv},${125+gv},${42+gv})`);
+    drawCircle(sx + ss*0.68, sy + ss*0.3, ss*0.27*sz, `rgb(${30+gv},${100+gv},${30+gv})`);
+    drawCircle(sx + ss*0.5, sy + ss*0.35, ss*0.3*sz, `rgb(${38+gv},${115+gv},${38+gv})`);
+    // Highlight
+    drawCircle(sx + ss*0.42, sy + ss*0.15, ss*0.12*sz, `rgba(255,255,255,0.1)`);
   });
+}
 
-  // Exhaust pipe
-  const exhaust = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.08, 0.1, 1, 8),
-    new THREE.MeshLambertMaterial({ color: 0x555555 })
-  );
-  exhaust.position.set(0.5, 2.5, 0.8);
-  tractor.add(exhaust);
+// ========== CROP RENDERING ==========
+function drawCrop(gx, gy) {
+  const crop = crops[gy][gx];
+  if (!crop) return;
 
-  tractor.position.set(0, 0, 0);
-  tractor.rotation.y = 0;
-  scene.add(tractor);
+  const px = gx * TILE;
+  const py = gy * TILE;
+  const sx = screenX(px);
+  const sy = screenY(py);
+  const ss = screenS(TILE);
+  const t = Date.now() * 0.002;
 
-  let tractorAngle = 0;
-  const TRACTOR_SPEED = 0.12;
+  // Subtle sway for growing/mature crops
+  const sway = crop.stage >= STAGE_GROWING ? Math.sin(t + gx * 2 + gy * 3) * 1.5 : 0;
 
-  // Camera follow offset
-  const camOffset = new THREE.Vector3(0, 12, 16);
+  ctx.save();
+  ctx.translate(sx + ss*0.5, sy + ss*0.9);
 
-  // --- CROP SYSTEM ---
-  function getRowZ(worldZ) {
-    const half = FIELD_SIZE / 2;
-    const nearestRow = Math.round(worldZ / ROW_SPACING) * ROW_SPACING;
-    if (nearestRow >= -half && nearestRow <= half) return nearestRow;
-    return null;
-  }
-
-  function snapToGrid(x, z) {
-    const rowZ = getRowZ(z);
-    if (rowZ === null) return null;
-    const snapX = Math.round(x / CROP_SPACING) * CROP_SPACING;
-    if (Math.abs(snapX) > FIELD_SIZE / 2) return null;
-    return { x: snapX, z: rowZ };
-  }
-
-  function isCropAt(x, z) {
-    return crops.some(c => Math.abs(c.x - x) < 0.5 && Math.abs(c.z - z) < 0.5);
-  }
-
-  function createCropMesh(type, stage) {
-    const g = new THREE.Group();
-    const colors = CROP_COLORS[type];
-    const scales = [0.3, 0.65, 1.0];
-    const s = scales[stage];
-
-    if (type === 'wheat') {
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04 * s, 0.05 * s, 1.5 * s, 6),
-        new THREE.MeshLambertMaterial({ color: colors.stem })
-      );
-      stem.position.y = 0.75 * s;
-      g.add(stem);
-      if (stage >= 1) {
-        const head = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.08 * s, 0.12 * s, 0.5 * s, 6),
-          new THREE.MeshLambertMaterial({ color: colors.head })
-        );
-        head.position.y = 1.6 * s;
-        g.add(head);
-      }
-    } else if (type === 'corn') {
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06 * s, 0.07 * s, 2.0 * s, 6),
-        new THREE.MeshLambertMaterial({ color: colors.stem })
-      );
-      stem.position.y = 1.0 * s;
-      g.add(stem);
-      if (stage >= 1) {
-        const cob = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.1 * s, 0.08 * s, 0.6 * s, 8),
-          new THREE.MeshLambertMaterial({ color: colors.head })
-        );
-        cob.position.set(0.15 * s, 1.2 * s, 0);
-        cob.rotation.z = 0.3;
-        g.add(cob);
-      }
-      if (stage >= 2) {
+  if (crop.type === 'wheat') {
+    switch(crop.stage) {
+      case STAGE_SEED:
+        // Small seed dots
+        ctx.fillStyle = '#a08040';
+        ctx.fillRect(-ss*0.06, -ss*0.08, ss*0.12, ss*0.08);
+        break;
+      case STAGE_SPROUT:
+        // Small green sprout
+        ctx.fillStyle = '#66BB6A';
+        ctx.fillRect(-ss*0.03, -ss*0.3, ss*0.06, ss*0.3);
+        ctx.fillRect(-ss*0.1, -ss*0.25, ss*0.08, ss*0.04);
+        break;
+      case STAGE_GROWING:
+        // Taller stalk
+        ctx.save();
+        ctx.rotate(sway * 0.02);
+        ctx.fillStyle = '#7CB342';
+        ctx.fillRect(-ss*0.03, -ss*0.5, ss*0.06, ss*0.5);
+        ctx.fillRect(-ss*0.12, -ss*0.4, ss*0.09, ss*0.04);
+        ctx.fillRect(ss*0.03, -ss*0.35, ss*0.09, ss*0.04);
+        ctx.restore();
+        break;
+      case STAGE_MATURE:
+        // Full wheat with golden head
+        ctx.save();
+        ctx.rotate(sway * 0.03);
+        ctx.fillStyle = '#8BC34A';
+        ctx.fillRect(-ss*0.03, -ss*0.65, ss*0.06, ss*0.65);
         // Leaves
-        for (let i = 0; i < 3; i++) {
-          const leaf = new THREE.Mesh(
-            new THREE.BoxGeometry(0.6 * s, 0.02, 0.15 * s),
-            new THREE.MeshLambertMaterial({ color: colors.stem })
-          );
-          leaf.position.set(0, 0.6 * s + i * 0.4 * s, 0);
-          leaf.rotation.y = i * 2.1;
-          leaf.rotation.z = 0.4;
-          g.add(leaf);
-        }
-      }
-    } else if (type === 'sunflower') {
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05 * s, 0.06 * s, 2.2 * s, 6),
-        new THREE.MeshLambertMaterial({ color: colors.stem })
-      );
-      stem.position.y = 1.1 * s;
-      g.add(stem);
-      if (stage >= 1) {
-        const headBig = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.35 * s, 0.35 * s, 0.12, 12),
-          new THREE.MeshLambertMaterial({ color: colors.head })
-        );
-        headBig.position.y = 2.3 * s;
-        headBig.rotation.x = 0.3;
-        g.add(headBig);
-      }
-      if (stage >= 2) {
-        // Petals
-        const petalMat = new THREE.MeshLambertMaterial({ color: 0xFFEB3B });
-        for (let i = 0; i < 8; i++) {
-          const petal = new THREE.Mesh(
-            new THREE.BoxGeometry(0.2 * s, 0.02, 0.4 * s),
-            petalMat
-          );
-          const angle = (i / 8) * Math.PI * 2;
-          petal.position.set(Math.cos(angle) * 0.4 * s, 2.3 * s, Math.sin(angle) * 0.4 * s);
-          petal.rotation.y = angle;
-          g.add(petal);
+        ctx.fillStyle = '#7CB342';
+        ctx.fillRect(-ss*0.15, -ss*0.45, ss*0.12, ss*0.04);
+        ctx.fillRect(ss*0.03, -ss*0.5, ss*0.12, ss*0.04);
+        // Golden wheat head
+        ctx.fillStyle = '#FFD54F';
+        ctx.fillRect(-ss*0.08, -ss*0.82, ss*0.16, ss*0.2);
+        ctx.fillStyle = '#FFC107';
+        ctx.fillRect(-ss*0.06, -ss*0.78, ss*0.12, ss*0.12);
+        // Whiskers
+        ctx.strokeStyle = '#FFD54F';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-ss*0.06, -ss*0.82); ctx.lineTo(-ss*0.12, -ss*0.92);
+        ctx.moveTo(0, -ss*0.82); ctx.lineTo(0, -ss*0.95);
+        ctx.moveTo(ss*0.06, -ss*0.82); ctx.lineTo(ss*0.12, -ss*0.92);
+        ctx.stroke();
+        ctx.restore();
+        break;
+    }
+  } else if (crop.type === 'corn') {
+    switch(crop.stage) {
+      case STAGE_SEED:
+        ctx.fillStyle = '#c0a040';
+        ctx.fillRect(-ss*0.05, -ss*0.07, ss*0.1, ss*0.07);
+        break;
+      case STAGE_SPROUT:
+        ctx.fillStyle = '#558B2F';
+        ctx.fillRect(-ss*0.03, -ss*0.32, ss*0.06, ss*0.32);
+        // Two small leaves
+        ctx.beginPath();
+        ctx.moveTo(ss*0.03, -ss*0.2);
+        ctx.lineTo(ss*0.15, -ss*0.28);
+        ctx.lineTo(ss*0.03, -ss*0.25);
+        ctx.fillStyle = '#66BB6A';
+        ctx.fill();
+        break;
+      case STAGE_GROWING:
+        ctx.save();
+        ctx.rotate(sway * 0.02);
+        ctx.fillStyle = '#558B2F';
+        ctx.fillRect(-ss*0.04, -ss*0.55, ss*0.08, ss*0.55);
+        // Leaves
+        ctx.fillStyle = '#7CB342';
+        ctx.beginPath();
+        ctx.moveTo(ss*0.04, -ss*0.3);
+        ctx.lineTo(ss*0.2, -ss*0.4);
+        ctx.lineTo(ss*0.04, -ss*0.38);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-ss*0.04, -ss*0.4);
+        ctx.lineTo(-ss*0.2, -ss*0.48);
+        ctx.lineTo(-ss*0.04, -ss*0.45);
+        ctx.fill();
+        ctx.restore();
+        break;
+      case STAGE_MATURE:
+        ctx.save();
+        ctx.rotate(sway * 0.03);
+        // Tall stalk
+        ctx.fillStyle = '#558B2F';
+        ctx.fillRect(-ss*0.04, -ss*0.75, ss*0.08, ss*0.75);
+        // Leaves spreading out
+        ctx.fillStyle = '#7CB342';
+        ctx.beginPath();
+        ctx.moveTo(ss*0.04, -ss*0.35);
+        ctx.lineTo(ss*0.25, -ss*0.48);
+        ctx.lineTo(ss*0.04, -ss*0.42);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-ss*0.04, -ss*0.45);
+        ctx.lineTo(-ss*0.25, -ss*0.55);
+        ctx.lineTo(-ss*0.04, -ss*0.5);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(ss*0.04, -ss*0.55);
+        ctx.lineTo(ss*0.2, -ss*0.65);
+        ctx.lineTo(ss*0.04, -ss*0.6);
+        ctx.fill();
+        // Corn cob
+        ctx.fillStyle = '#FDD835';
+        ctx.fillRect(ss*0.06, -ss*0.6, ss*0.12, ss*0.22);
+        // Cob husk
+        ctx.fillStyle = '#8BC34A';
+        ctx.beginPath();
+        ctx.moveTo(ss*0.06, -ss*0.6);
+        ctx.lineTo(ss*0.02, -ss*0.68);
+        ctx.lineTo(ss*0.06, -ss*0.55);
+        ctx.fill();
+        // Tassel at top
+        ctx.strokeStyle = '#A1887F';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -ss*0.75); ctx.lineTo(-ss*0.08, -ss*0.88);
+        ctx.moveTo(0, -ss*0.75); ctx.lineTo(ss*0.06, -ss*0.9);
+        ctx.moveTo(0, -ss*0.75); ctx.lineTo(0, -ss*0.92);
+        ctx.stroke();
+        ctx.restore();
+        break;
+    }
+  } else if (crop.type === 'sunflower') {
+    switch(crop.stage) {
+      case STAGE_SEED:
+        ctx.fillStyle = '#888';
+        ctx.fillRect(-ss*0.05, -ss*0.08, ss*0.1, ss*0.08);
+        break;
+      case STAGE_SPROUT:
+        ctx.fillStyle = '#33691E';
+        ctx.fillRect(-ss*0.03, -ss*0.3, ss*0.06, ss*0.3);
+        // Two cotyledon leaves
+        ctx.fillStyle = '#66BB6A';
+        drawCircle(-ss*0.09, -ss*0.28, ss*0.06, '#66BB6A');
+        drawCircle(ss*0.09, -ss*0.28, ss*0.06, '#66BB6A');
+        break;
+      case STAGE_GROWING:
+        ctx.save();
+        ctx.rotate(sway * 0.02);
+        ctx.fillStyle = '#33691E';
+        ctx.fillRect(-ss*0.04, -ss*0.6, ss*0.08, ss*0.6);
+        // Heart-shaped leaves
+        ctx.fillStyle = '#558B2F';
+        ctx.beginPath();
+        ctx.ellipse(-ss*0.15, -ss*0.35, ss*0.1, ss*0.06, -0.3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(ss*0.15, -ss*0.45, ss*0.1, ss*0.06, 0.3, 0, Math.PI*2);
+        ctx.fill();
+        // Small bud
+        ctx.fillStyle = '#FFC107';
+        drawCircle(0, -ss*0.65, ss*0.08, '#FFC107');
+        ctx.restore();
+        break;
+      case STAGE_MATURE:
+        ctx.save();
+        ctx.rotate(sway * 0.025);
+        // Thick stalk
+        ctx.fillStyle = '#33691E';
+        ctx.fillRect(-ss*0.05, -ss*0.8, ss*0.1, ss*0.8);
+        // Big leaves
+        ctx.fillStyle = '#558B2F';
+        ctx.beginPath();
+        ctx.ellipse(-ss*0.2, -ss*0.4, ss*0.14, ss*0.07, -0.4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(ss*0.2, -ss*0.55, ss*0.14, ss*0.07, 0.4, 0, Math.PI*2);
+        ctx.fill();
+        // Sunflower head - petals
+        const petalCount = 10;
+        for (let i = 0; i < petalCount; i++) {
+          const angle = (i / petalCount) * Math.PI * 2;
+          const px = Math.cos(angle) * ss * 0.18;
+          const py2 = Math.sin(angle) * ss * 0.18 - ss * 0.9;
+          ctx.fillStyle = '#FFD600';
+          ctx.beginPath();
+          ctx.ellipse(px, py2, ss*0.09, ss*0.05, angle, 0, Math.PI*2);
+          ctx.fill();
         }
         // Center
-        const center = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.2 * s, 0.2 * s, 0.14, 10),
-          new THREE.MeshLambertMaterial({ color: 0x4E342E })
-        );
-        center.position.y = 2.35 * s;
-        center.rotation.x = 0.3;
-        g.add(center);
-      }
-    }
-    return g;
-  }
-
-  function plantCrop() {
-    const pos = snapToGrid(tractor.position.x, tractor.position.z);
-    if (!pos || isCropAt(pos.x, pos.z)) return;
-
-    const mesh = createCropMesh(selectedCrop, 0);
-    mesh.position.set(pos.x, 0, pos.z);
-    scene.add(mesh);
-
-    const crop = {
-      type: selectedCrop,
-      x: pos.x,
-      z: pos.z,
-      stage: 0,
-      planted: Date.now(),
-      lastGrow: Date.now(),
-      mesh: mesh,
-      mature: false
-    };
-    crops.push(crop);
-    cropCount++;
-    updateHUD();
-  }
-
-  function harvestNearby() {
-    const tx = tractor.position.x;
-    const tz = tractor.position.z;
-    let harvested = false;
-    for (let i = crops.length - 1; i >= 0; i--) {
-      const c = crops[i];
-      const dx = c.x - tx;
-      const dz = c.z - tz;
-      if (Math.sqrt(dx * dx + dz * dz) < 2.5 && c.mature) {
-        scene.remove(c.mesh);
-        score += CROP_POINTS[c.type];
-        cropCount--;
-        crops.splice(i, 1);
-        harvested = true;
-        // Particle burst
-        spawnParticles(c.x, 1, c.z, c.type);
-      }
-    }
-    if (harvested) updateHUD();
-    return harvested;
-  }
-
-  function doAction() {
-    if (!harvestNearby()) {
-      plantCrop();
+        drawCircle(0, -ss*0.9, ss*0.11, '#5D4037');
+        drawCircle(0, -ss*0.9, ss*0.07, '#4E342E');
+        // Seeds in center
+        ctx.fillStyle = '#3E2723';
+        for (let i = 0; i < 4; i++) {
+          const a = i * 1.5;
+          ctx.fillRect(Math.cos(a)*ss*0.03, -ss*0.9 + Math.sin(a)*ss*0.03, ss*0.02, ss*0.02);
+        }
+        ctx.restore();
+        break;
     }
   }
 
-  // Simple particles
-  const particles = [];
-  function spawnParticles(x, y, z, type) {
-    const colors = { wheat: 0xFFD54F, corn: 0xFDD835, sunflower: 0xFF8F00 };
-    for (let i = 0; i < 8; i++) {
-      const p = new THREE.Mesh(
-        new THREE.BoxGeometry(0.15, 0.15, 0.15),
-        new THREE.MeshBasicMaterial({ color: colors[type] })
-      );
-      p.position.set(x, y, z);
-      p.userData.vx = (Math.random() - 0.5) * 0.15;
-      p.userData.vy = Math.random() * 0.15 + 0.05;
-      p.userData.vz = (Math.random() - 0.5) * 0.15;
-      p.userData.life = 40;
-      scene.add(p);
-      particles.push(p);
+  // Watered indicator - water droplets
+  if (crop.watered && crop.stage < STAGE_MATURE) {
+    ctx.fillStyle = 'rgba(50,150,255,0.5)';
+    drawCircle(-ss*0.12, -ss*0.05, ss*0.04, 'rgba(50,150,255,0.5)');
+    drawCircle(ss*0.1, -ss*0.03, ss*0.03, 'rgba(50,150,255,0.4)');
+  }
+
+  ctx.restore();
+}
+
+// ========== PLAYER RENDERING ==========
+function drawPlayer() {
+  const sx = screenX(player.x);
+  const sy = screenY(player.y);
+  const ss = screenS(TILE);
+  const bobY = player.moving ? Math.sin(player.animTimer * 0.15) * ss * 0.04 : 0;
+  const walkCycle = player.moving ? Math.sin(player.animTimer * 0.15) : 0;
+
+  ctx.save();
+  ctx.translate(sx, sy + bobY);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(0, ss*0.4, ss*0.28, ss*0.08, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Body direction: 0=down, 1=left, 2=right, 3=up
+  const dir = player.dir;
+
+  // Legs (animated)
+  const legSpread = walkCycle * ss * 0.08;
+  ctx.fillStyle = '#5D4037'; // brown pants
+  ctx.fillRect(-ss*0.12 - legSpread*0.5, ss*0.08, ss*0.1, ss*0.24);
+  ctx.fillRect(ss*0.02 + legSpread*0.5, ss*0.08, ss*0.1, ss*0.24);
+  // Boots
+  ctx.fillStyle = '#3E2723';
+  ctx.fillRect(-ss*0.14 - legSpread*0.5, ss*0.28, ss*0.14, ss*0.08);
+  ctx.fillRect(ss*0.01 + legSpread*0.5, ss*0.28, ss*0.14, ss*0.08);
+
+  // Body (shirt)
+  ctx.fillStyle = '#4CAF50'; // green shirt
+  ctx.fillRect(-ss*0.18, -ss*0.15, ss*0.36, ss*0.28);
+  // Overalls
+  ctx.fillStyle = '#5D4037';
+  ctx.fillRect(-ss*0.12, -ss*0.02, ss*0.24, ss*0.18);
+  // Suspenders
+  ctx.fillStyle = '#4E342E';
+  ctx.fillRect(-ss*0.1, -ss*0.15, ss*0.04, ss*0.2);
+  ctx.fillRect(ss*0.06, -ss*0.15, ss*0.04, ss*0.2);
+
+  // Arms (animated with walk)
+  const armSwing = walkCycle * ss * 0.06;
+  ctx.fillStyle = '#4CAF50';
+  if (dir !== 1) { // right arm (hidden when facing left)
+    ctx.fillRect(ss*0.18, -ss*0.12 + armSwing, ss*0.08, ss*0.2);
+    ctx.fillStyle = '#FFCC80'; // hand
+    ctx.fillRect(ss*0.18, ss*0.06 + armSwing, ss*0.08, ss*0.06);
+  }
+  ctx.fillStyle = '#4CAF50';
+  if (dir !== 2) { // left arm
+    ctx.fillRect(-ss*0.26, -ss*0.12 - armSwing, ss*0.08, ss*0.2);
+    ctx.fillStyle = '#FFCC80';
+    ctx.fillRect(-ss*0.26, ss*0.06 - armSwing, ss*0.08, ss*0.06);
+  }
+
+  // Head
+  ctx.fillStyle = '#FFCC80'; // skin
+  ctx.fillRect(-ss*0.14, -ss*0.38, ss*0.28, ss*0.26);
+
+  // Hair
+  ctx.fillStyle = '#5D4037';
+  ctx.fillRect(-ss*0.16, -ss*0.42, ss*0.32, ss*0.1);
+  if (dir === 3) {
+    // Back of head - more hair
+    ctx.fillRect(-ss*0.14, -ss*0.35, ss*0.28, ss*0.15);
+  }
+
+  // Hat (straw hat)
+  ctx.fillStyle = '#FFC107';
+  ctx.fillRect(-ss*0.22, -ss*0.44, ss*0.44, ss*0.06); // brim
+  ctx.fillStyle = '#FFB300';
+  ctx.fillRect(-ss*0.14, -ss*0.52, ss*0.28, ss*0.1); // top
+  ctx.fillStyle = '#8BC34A'; // hat band
+  ctx.fillRect(-ss*0.14, -ss*0.44, ss*0.28, ss*0.03);
+
+  // Face (only if facing down or sides)
+  if (dir !== 3) {
+    // Eyes
+    ctx.fillStyle = '#333';
+    if (dir === 0) {
+      ctx.fillRect(-ss*0.08, -ss*0.3, ss*0.05, ss*0.05);
+      ctx.fillRect(ss*0.03, -ss*0.3, ss*0.05, ss*0.05);
+      // Smile
+      ctx.strokeStyle = '#c77';
+      ctx.lineWidth = Math.max(1, ss*0.02);
+      ctx.beginPath();
+      ctx.arc(0, -ss*0.2, ss*0.06, 0.2, Math.PI - 0.2);
+      ctx.stroke();
+    } else {
+      // Side face - one eye
+      const ex = dir === 2 ? ss*0.02 : -ss*0.06;
+      ctx.fillRect(ex, -ss*0.3, ss*0.05, ss*0.05);
+      ctx.strokeStyle = '#c77';
+      ctx.lineWidth = Math.max(1, ss*0.02);
+      ctx.beginPath();
+      ctx.arc(ex + ss*0.02, -ss*0.2, ss*0.04, 0.2, Math.PI - 0.2);
+      ctx.stroke();
     }
+    // Cheek blush
+    ctx.fillStyle = 'rgba(255,150,150,0.3)';
+    drawCircle(-ss*0.1, -ss*0.22, ss*0.04, 'rgba(255,150,150,0.3)');
+    drawCircle(ss*0.1, -ss*0.22, ss*0.04, 'rgba(255,150,150,0.3)');
   }
 
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.position.x += p.userData.vx;
-      p.position.y += p.userData.vy;
-      p.position.z += p.userData.vz;
-      p.userData.vy -= 0.005;
-      p.userData.life--;
-      if (p.userData.life <= 0) {
-        scene.remove(p);
-        particles.splice(i, 1);
-      }
+  // Tool in hand (only show current tool)
+  if (player.actionTimer > 0) {
+    const toolAngle = (player.actionTimer / 15) * Math.PI * 0.5;
+    ctx.save();
+    const handX = dir === 1 ? -ss*0.3 : ss*0.24;
+    ctx.translate(handX, -ss*0.05);
+    ctx.rotate(-toolAngle);
+    if (currentTool === 'hoe') {
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(-ss*0.02, -ss*0.25, ss*0.04, ss*0.25);
+      ctx.fillStyle = '#888';
+      ctx.fillRect(-ss*0.06, -ss*0.3, ss*0.12, ss*0.06);
+    } else if (currentTool === 'water') {
+      ctx.fillStyle = '#607D8B';
+      ctx.fillRect(-ss*0.06, -ss*0.15, ss*0.12, ss*0.15);
+      ctx.fillStyle = '#78909C';
+      ctx.fillRect(ss*0.06, -ss*0.1, ss*0.06, ss*0.04);
+    } else if (currentTool === 'sickle') {
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(-ss*0.02, -ss*0.2, ss*0.04, ss*0.2);
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = Math.max(1, ss*0.04);
+      ctx.beginPath();
+      ctx.arc(-ss*0.02, -ss*0.22, ss*0.1, -0.5, Math.PI*0.8);
+      ctx.stroke();
     }
+    ctx.restore();
   }
 
-  function updateHUD() {
-    document.getElementById('score-box').textContent = 'Bodovi: ' + score;
-    document.getElementById('info-box').textContent = 'Usjevi: ' + cropCount;
-  }
+  ctx.restore();
+}
 
-  // --- CROP GROWTH ---
-  function updateCrops() {
-    const now = Date.now();
-    crops.forEach(c => {
-      if (c.stage < 2 && now - c.lastGrow > GROW_TIME[c.stage]) {
-        c.stage++;
-        c.lastGrow = now;
-        if (c.stage === 2) c.mature = true;
-        // Replace mesh
-        scene.remove(c.mesh);
-        c.mesh = createCropMesh(c.type, c.stage);
-        c.mesh.position.set(c.x, 0, c.z);
-        scene.add(c.mesh);
-      }
-      // Gentle sway for mature
-      if (c.mature) {
-        c.mesh.rotation.z = Math.sin(now * 0.002 + c.x) * 0.05;
-      }
+// ========== PARTICLES ==========
+function spawnParticles(wx, wy, color, count, type) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: wx, y: wy,
+      vx: (Math.random() - 0.5) * 3,
+      vy: -Math.random() * 3 - 1,
+      life: 30 + Math.random() * 20,
+      maxLife: 50,
+      color: color,
+      size: 2 + Math.random() * 3,
+      type: type || 'square'
     });
   }
+}
 
-  // --- INPUT ---
-  window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
-  window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && gameStarted) { e.preventDefault(); doAction(); }
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.1;
+    p.life--;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    const alpha = p.life / p.maxLife;
+    const sx = screenX(p.x);
+    const sy = screenY(p.y);
+    const ss = screenS(p.size);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    if (p.type === 'circle') {
+      ctx.beginPath();
+      ctx.arc(sx, sy, ss, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      ctx.fillRect(sx - ss/2, sy - ss/2, ss, ss);
+    }
   });
+  ctx.globalAlpha = 1;
+}
 
-  // Crop selector
-  document.querySelectorAll('#crop-selector button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#crop-selector button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedCrop = btn.dataset.crop;
-    });
+// ========== HIGHLIGHT TILE ==========
+function drawTileHighlight() {
+  if (mouseGridX < 0 || mouseGridY < 0 || mouseGridX >= GRID_W || mouseGridY >= GRID_H) return;
+  const sx = screenX(mouseGridX * TILE);
+  const sy = screenY(mouseGridY * TILE);
+  const ss = screenS(TILE);
+
+  // Determine highlight color based on tool validity
+  let valid = false;
+  const tile = map[mouseGridY][mouseGridX];
+  if (currentTool === 'hoe' && tile === T_DIRT) valid = true;
+  if (currentTool === 'seed' && tile === T_TILLED && !crops[mouseGridY][mouseGridX]) valid = true;
+  if (currentTool === 'water' && tile === T_TILLED && crops[mouseGridY][mouseGridX] && !crops[mouseGridY][mouseGridX].watered) valid = true;
+  if (currentTool === 'sickle' && crops[mouseGridY][mouseGridX] && crops[mouseGridY][mouseGridX].stage === STAGE_MATURE) valid = true;
+
+  ctx.strokeStyle = valid ? 'rgba(139,195,74,0.9)' : 'rgba(255,100,100,0.5)';
+  ctx.lineWidth = Math.max(2, screenS(2));
+  ctx.strokeRect(sx + 1, sy + 1, ss - 2, ss - 2);
+
+  if (valid) {
+    ctx.fillStyle = 'rgba(139,195,74,0.15)';
+    ctx.fillRect(sx, sy, ss, ss);
+  }
+}
+
+// ========== DAY/NIGHT CYCLE ==========
+function updateDayNight(dt) {
+  dayTime = (dayTime + dt / DAY_CYCLE_MS) % 1;
+  const overlay = document.getElementById('day-overlay');
+  // 0-0.25 = morning, 0.25-0.5 = noon, 0.5-0.75 = evening, 0.75-1 = night
+  let color = 'rgba(0,0,0,0)';
+  if (dayTime > 0.6 && dayTime < 0.75) {
+    // Sunset - warm orange
+    const t = (dayTime - 0.6) / 0.15;
+    color = `rgba(255,${Math.floor(140-t*80)},${Math.floor(50-t*50)},${t * 0.2})`;
+  } else if (dayTime >= 0.75 && dayTime < 0.9) {
+    // Night
+    const t = (dayTime - 0.75) / 0.15;
+    color = `rgba(10,10,40,${0.2 + t * 0.25})`;
+  } else if (dayTime >= 0.9) {
+    // Late night to dawn
+    const t = (dayTime - 0.9) / 0.1;
+    color = `rgba(10,10,40,${0.45 - t * 0.35})`;
+  } else if (dayTime < 0.1) {
+    // Dawn
+    const t = dayTime / 0.1;
+    color = `rgba(255,200,100,${0.1 - t * 0.1})`;
+  }
+  overlay.style.background = color;
+}
+
+// ========== CROP GROWTH ==========
+function updateCrops(dt) {
+  for (let y = 0; y < GRID_H; y++) {
+    for (let x = 0; x < GRID_W; x++) {
+      const crop = crops[y][x];
+      if (!crop || crop.stage >= STAGE_MATURE) continue;
+      const mult = crop.watered ? 2 : 1;
+      crop.growTimer += dt * mult;
+      if (crop.growTimer >= GROW_BASE) {
+        crop.growTimer -= GROW_BASE;
+        crop.stage++;
+        if (crop.stage >= STAGE_MATURE) {
+          // Sparkle effect
+          spawnParticles(x * TILE + TILE/2, y * TILE + TILE/4, '#FFD700', 5, 'circle');
+        }
+      }
+    }
+  }
+}
+
+// ========== TOOL ACTIONS ==========
+function useTool(gx, gy) {
+  if (gx < 0 || gy < 0 || gx >= GRID_W || gy >= GRID_H) return;
+
+  // Check distance from player
+  const dx = (gx * TILE + TILE/2) - player.x;
+  const dy = (gy * TILE + TILE/2) - player.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > TILE * 2.5) return; // Too far
+
+  const tile = map[gy][gx];
+  player.actionTimer = 15;
+
+  // Face toward the tile
+  if (Math.abs(dx) > Math.abs(dy)) {
+    player.dir = dx > 0 ? 2 : 1;
+  } else {
+    player.dir = dy > 0 ? 0 : 3;
+  }
+
+  switch(currentTool) {
+    case 'hoe':
+      if (tile === T_DIRT) {
+        map[gy][gx] = T_TILLED;
+        spawnParticles(gx*TILE+TILE/2, gy*TILE+TILE/2, '#8B6914', 6, 'square');
+      }
+      break;
+    case 'seed':
+      if (tile === T_TILLED && !crops[gy][gx]) {
+        crops[gy][gx] = {
+          type: selectedSeed,
+          stage: STAGE_SEED,
+          watered: false,
+          growTimer: 0
+        };
+        spawnParticles(gx*TILE+TILE/2, gy*TILE+TILE/2, '#8BC34A', 4, 'circle');
+      }
+      break;
+    case 'water':
+      if (tile === T_TILLED && crops[gy][gx] && !crops[gy][gx].watered) {
+        crops[gy][gx].watered = true;
+        spawnParticles(gx*TILE+TILE/2, gy*TILE+TILE/2, '#42A5F5', 8, 'circle');
+      }
+      // Also water tilled soil without crop
+      if (tile === T_TILLED && !crops[gy][gx]) {
+        // just show water effect
+        spawnParticles(gx*TILE+TILE/2, gy*TILE+TILE/2, '#42A5F5', 4, 'circle');
+      }
+      break;
+    case 'sickle':
+      if (crops[gy][gx] && crops[gy][gx].stage === STAGE_MATURE) {
+        const type = crops[gy][gx].type;
+        inventory[type]++;
+        score += CROP_PRICES[type];
+        // Harvest particles
+        const hColors = { wheat: '#FFD54F', corn: '#FDD835', sunflower: '#FF8F00' };
+        spawnParticles(gx*TILE+TILE/2, gy*TILE+TILE/4, hColors[type], 12, 'square');
+        // Float score text
+        particles.push({
+          x: gx*TILE+TILE/2, y: gy*TILE,
+          vx: 0, vy: -1.5, life: 40, maxLife: 40,
+          color: '#FFC107', size: 5, type: 'text',
+          text: '+' + CROP_PRICES[type]
+        });
+        crops[gy][gx] = null;
+        map[gy][gx] = T_DIRT; // revert to dirt
+        updateHUD();
+        updateShop();
+      }
+      break;
+  }
+}
+
+// ========== PLAYER MOVEMENT ==========
+function updatePlayer(dt) {
+  let mx = 0, my = 0;
+  if (keys['w'] || keys['arrowup']) my = -1;
+  if (keys['s'] || keys['arrowdown']) my = 1;
+  if (keys['a'] || keys['arrowleft']) mx = -1;
+  if (keys['d'] || keys['arrowright']) mx = 1;
+
+  mx += joystickX;
+  my += joystickY;
+
+  const len = Math.sqrt(mx*mx + my*my);
+  player.moving = len > 0.15;
+
+  if (player.moving) {
+    const nx = mx / len;
+    const ny = my / len;
+    const speed = PLAYER_SPEED * (dt / 16.67);
+
+    const newX = player.x + nx * speed * TILE * 0.05;
+    const newY = player.y + ny * speed * TILE * 0.05;
+
+    // Collision check
+    const checkGx = Math.floor(newX / TILE);
+    const checkGy = Math.floor(newY / TILE);
+    if (checkGx >= 0 && checkGx < GRID_W && checkGy >= 0 && checkGy < GRID_H) {
+      const tile = map[checkGy][checkGx];
+      if (tile !== T_WATER && tile !== T_TREE && tile !== T_FENCE) {
+        player.x = newX;
+        player.y = newY;
+      } else {
+        // Try sliding along walls
+        const checkGx2 = Math.floor(newX / TILE);
+        const checkGy2 = Math.floor(player.y / TILE);
+        if (checkGx2 >= 0 && checkGx2 < GRID_W && map[checkGy2][checkGx2] !== T_WATER && map[checkGy2][checkGx2] !== T_TREE && map[checkGy2][checkGx2] !== T_FENCE) {
+          player.x = newX;
+        } else {
+          const checkGx3 = Math.floor(player.x / TILE);
+          const checkGy3 = Math.floor(newY / TILE);
+          if (checkGy3 >= 0 && checkGy3 < GRID_H && map[checkGy3][checkGx3] !== T_WATER && map[checkGy3][checkGx3] !== T_TREE && map[checkGy3][checkGx3] !== T_FENCE) {
+            player.y = newY;
+          }
+        }
+      }
+    }
+
+    // Clamp to map
+    player.x = Math.max(TILE*0.5, Math.min(MAP_W - TILE*0.5, player.x));
+    player.y = Math.max(TILE*0.5, Math.min(MAP_H - TILE*0.5, player.y));
+
+    // Direction
+    if (Math.abs(mx) > Math.abs(my)) {
+      player.dir = mx > 0 ? 2 : 1;
+    } else {
+      player.dir = my > 0 ? 0 : 3;
+    }
+
+    player.animTimer += dt * 0.06;
+  }
+
+  if (player.actionTimer > 0) player.actionTimer--;
+}
+
+// ========== HUD ==========
+function updateHUD() {
+  document.getElementById('score-box').textContent = 'Bodovi: ' + score;
+  document.getElementById('coin-box').textContent = 'Novci: ' + coins;
+}
+
+function updateShop() {
+  document.getElementById('inv-wheat').textContent = 'x' + inventory.wheat;
+  document.getElementById('inv-corn').textContent = 'x' + inventory.corn;
+  document.getElementById('inv-sunflower').textContent = 'x' + inventory.sunflower;
+  document.querySelectorAll('.sell-btn').forEach(btn => {
+    const type = btn.dataset.sell;
+    btn.disabled = inventory[type] <= 0;
   });
+}
 
-  // Start button
-  document.getElementById('start-btn').addEventListener('click', () => {
-    document.getElementById('instructions').style.display = 'none';
-    gameStarted = true;
+// ========== FLOATING TEXT PARTICLES ==========
+function drawFloatingText() {
+  particles.forEach(p => {
+    if (p.type !== 'text') return;
+    const alpha = p.life / p.maxLife;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.font = `bold ${screenS(12)}px 'Segoe UI', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, screenX(p.x), screenY(p.y));
   });
+  ctx.globalAlpha = 1;
+}
 
-  // Mobile action button
-  document.getElementById('action-btn').addEventListener('touchstart', e => {
+// ========== MAIN RENDER ==========
+function render() {
+  // Clear
+  ctx.fillStyle = '#1a3a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw tiles
+  for (let y = 0; y < GRID_H; y++) {
+    for (let x = 0; x < GRID_W; x++) {
+      drawTile(x, y);
+    }
+  }
+
+  // Draw crops (before trees so trees overlap)
+  for (let y = 0; y < GRID_H; y++) {
+    for (let x = 0; x < GRID_W; x++) {
+      if (crops[y][x]) drawCrop(x, y);
+    }
+  }
+
+  // Draw player (sorted by y for depth)
+  // Draw trees that are above player first, player, then trees below
+  const playerGridY = Math.floor(player.y / TILE);
+
+  // Trees above player
+  treeData.forEach(t => { if (t.y < playerGridY) drawTreeSingle(t); });
+
+  drawPlayer();
+
+  // Trees at or below player
+  treeData.forEach(t => { if (t.y >= playerGridY) drawTreeSingle(t); });
+
+  // Tile highlight
+  drawTileHighlight();
+
+  // Particles
+  drawParticles();
+  drawFloatingText();
+}
+
+function drawTreeSingle(t) {
+  const sx = screenX(t.x * TILE);
+  const sy = screenY(t.y * TILE);
+  const ss = screenS(TILE);
+  const sz = t.size;
+  const gv = t.hue;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(sx + ss*0.5, sy + ss*0.9, ss*0.35*sz, ss*0.12, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Trunk
+  ctx.fillStyle = '#5D4037';
+  ctx.fillRect(sx + ss*0.38, sy + ss*0.35, ss*0.24, ss*0.55);
+  ctx.fillStyle = '#6D4C41';
+  ctx.fillRect(sx + ss*0.42, sy + ss*0.4, ss*0.08, ss*0.45);
+  // Foliage
+  drawCircle(sx + ss*0.5, sy + ss*0.2, ss*0.38*sz, `rgb(${35+gv},${110+gv},${35+gv})`);
+  drawCircle(sx + ss*0.32, sy + ss*0.32, ss*0.25*sz, `rgb(${42+gv},${125+gv},${42+gv})`);
+  drawCircle(sx + ss*0.68, sy + ss*0.3, ss*0.27*sz, `rgb(${30+gv},${100+gv},${30+gv})`);
+  drawCircle(sx + ss*0.5, sy + ss*0.35, ss*0.3*sz, `rgb(${38+gv},${115+gv},${38+gv})`);
+  drawCircle(sx + ss*0.42, sy + ss*0.15, ss*0.12*sz, 'rgba(255,255,255,0.1)');
+}
+
+// ========== INPUT HANDLING ==========
+window.addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key >= '1' && e.key <= '4' && gameStarted) {
     e.preventDefault();
-    if (gameStarted) doAction();
+    const tools = ['hoe','seed','water','sickle'];
+    selectTool(tools[parseInt(e.key)-1]);
+  }
+});
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+function selectTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+  document.getElementById('seed-menu').classList.toggle('show', tool === 'seed');
+}
+
+// Tool buttons
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.addEventListener('click', () => selectTool(btn.dataset.tool));
+});
+
+// Seed selection
+document.querySelectorAll('.seed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedSeed = btn.dataset.seed;
+    document.querySelectorAll('.seed-btn').forEach(b => b.classList.toggle('active', b.dataset.seed === selectedSeed));
   });
+});
 
-  // Joystick
-  const joystickArea = document.getElementById('joystick-area');
-  const joystickThumb = document.getElementById('joystick-thumb');
-  let joystickActive = false;
-  let joystickCenterX, joystickCenterY;
+// Canvas click/tap -> use tool
+canvas.addEventListener('click', e => {
+  if (!gameStarted) return;
+  const rect = canvas.getBoundingClientRect();
+  const { gx, gy } = screenToGrid(e.clientX - rect.left, e.clientY - rect.top);
+  useTool(gx, gy);
+});
 
-  joystickArea.addEventListener('touchstart', e => {
+// Mouse move for tile highlight
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const { gx, gy } = screenToGrid(e.clientX - rect.left, e.clientY - rect.top);
+  mouseGridX = gx;
+  mouseGridY = gy;
+});
+canvas.addEventListener('mouseleave', () => { mouseGridX = -1; mouseGridY = -1; });
+
+// Touch tap on canvas (for mobile - also handles tool usage)
+canvas.addEventListener('touchend', e => {
+  if (!gameStarted) return;
+  if (e.changedTouches.length > 0) {
+    const touch = e.changedTouches[0];
+    const rect = canvas.getBoundingClientRect();
+    const { gx, gy } = screenToGrid(touch.clientX - rect.left, touch.clientY - rect.top);
+    useTool(gx, gy);
+  }
+});
+
+// Start button
+document.getElementById('start-btn').addEventListener('click', () => {
+  document.getElementById('instructions').style.display = 'none';
+  gameStarted = true;
+});
+
+// Shop
+document.getElementById('shop-btn').addEventListener('click', () => {
+  updateShop();
+  document.getElementById('shop-overlay').classList.add('show');
+});
+document.getElementById('shop-close').addEventListener('click', () => {
+  document.getElementById('shop-overlay').classList.remove('show');
+});
+document.querySelectorAll('.sell-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const type = btn.dataset.sell;
+    if (inventory[type] > 0) {
+      inventory[type]--;
+      coins += CROP_PRICES[type];
+      updateHUD();
+      updateShop();
+    }
+  });
+});
+
+// ========== MOBILE JOYSTICK ==========
+const joystickBase = document.getElementById('joystick-base');
+const joystickKnob = document.getElementById('joystick-knob');
+let joystickActive = false;
+let joystickCX, joystickCY;
+
+joystickBase.addEventListener('touchstart', e => {
+  e.preventDefault();
+  joystickActive = true;
+  const rect = joystickBase.getBoundingClientRect();
+  joystickCX = rect.left + rect.width / 2;
+  joystickCY = rect.top + rect.height / 2;
+  handleJoystick(e);
+});
+
+window.addEventListener('touchmove', e => {
+  if (joystickActive) {
     e.preventDefault();
-    joystickActive = true;
-    const rect = joystickArea.getBoundingClientRect();
-    joystickCenterX = rect.left + rect.width / 2;
-    joystickCenterY = rect.top + rect.height / 2;
-    handleJoystickMove(e);
-  });
-  window.addEventListener('touchmove', e => {
-    if (joystickActive) handleJoystickMove(e);
-  });
-  window.addEventListener('touchend', e => {
-    if (joystickActive && e.touches.length === 0) {
+    handleJoystick(e);
+  }
+}, { passive: false });
+
+window.addEventListener('touchend', e => {
+  if (joystickActive) {
+    // Check if the joystick touch ended
+    let stillTouching = false;
+    for (let i = 0; i < e.touches.length; i++) {
+      const t = e.touches[i];
+      const dx = t.clientX - joystickCX;
+      const dy = t.clientY - joystickCY;
+      if (Math.sqrt(dx*dx+dy*dy) < 100) { stillTouching = true; break; }
+    }
+    if (!stillTouching) {
       joystickActive = false;
-      joystickX = 0; joystickY = 0;
-      joystickThumb.style.transform = 'translate(-50%, -50%)';
+      joystickX = 0;
+      joystickY = 0;
+      joystickKnob.style.transform = 'translate(-50%, -50%)';
     }
-  });
+  }
+});
 
-  function handleJoystickMove(e) {
-    const t = e.touches[0];
-    let dx = t.clientX - joystickCenterX;
-    let dy = t.clientY - joystickCenterY;
-    const maxR = 40;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > maxR) { dx = dx / dist * maxR; dy = dy / dist * maxR; }
-    joystickThumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-    joystickX = dx / maxR;
-    joystickY = dy / maxR;
+function handleJoystick(e) {
+  let touch = null;
+  for (let i = 0; i < e.touches.length; i++) {
+    const t = e.touches[i];
+    const dx = t.clientX - joystickCX;
+    const dy = t.clientY - joystickCY;
+    if (Math.sqrt(dx*dx+dy*dy) < 120) { touch = t; break; }
+  }
+  if (!touch) return;
+  let dx = touch.clientX - joystickCX;
+  let dy = touch.clientY - joystickCY;
+  const maxR = 38;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > maxR) { dx = dx/dist*maxR; dy = dy/dist*maxR; }
+  joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  joystickX = dx / maxR;
+  joystickY = dy / maxR;
+}
+
+// ========== GAME LOOP ==========
+let lastTime = 0;
+
+function gameLoop(timestamp) {
+  const dt = lastTime ? Math.min(timestamp - lastTime, 50) : 16.67;
+  lastTime = timestamp;
+
+  if (gameStarted) {
+    updatePlayer(dt);
+    updateCrops(dt);
+    updateDayNight(dt);
+    updateParticles();
   }
 
-  // --- GAME LOOP ---
-  function updateTractor() {
-    let moveX = 0, moveZ = 0;
+  render();
+  requestAnimationFrame(gameLoop);
+}
 
-    if (keys['w'] || keys['arrowup']) moveZ = -1;
-    if (keys['s'] || keys['arrowdown']) moveZ = 1;
-    if (keys['a'] || keys['arrowleft']) moveX = -1;
-    if (keys['d'] || keys['arrowright']) moveX = 1;
+requestAnimationFrame(gameLoop);
 
-    // Add joystick input
-    moveX += joystickX;
-    moveZ += joystickY;
-
-    // Normalize
-    const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
-    if (len > 0.1) {
-      const nx = moveX / len;
-      const nz = moveZ / len;
-      tractor.position.x += nx * TRACTOR_SPEED;
-      tractor.position.z += nz * TRACTOR_SPEED;
-
-      // Face direction of movement
-      const targetAngle = Math.atan2(nx, nz);
-      let diff = targetAngle - tractorAngle;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      tractorAngle += diff * 0.15;
-      tractor.rotation.y = tractorAngle;
-    }
-
-    // Clamp to field
-    const limit = FIELD_SIZE / 2 + 2;
-    tractor.position.x = Math.max(-limit, Math.min(limit, tractor.position.x));
-    tractor.position.z = Math.max(-limit, Math.min(limit, tractor.position.z));
-  }
-
-  function updateCamera() {
-    const target = tractor.position.clone().add(camOffset);
-    camera.position.lerp(target, 0.05);
-    camera.lookAt(tractor.position.x, 0, tractor.position.z);
-  }
-
-  function animate() {
-    requestAnimationFrame(animate);
-    if (gameStarted) {
-      updateTractor();
-      updateCrops();
-      updateParticles();
-    }
-    // Clouds drift
-    clouds.forEach((c, i) => {
-      c.position.x += 0.01 + i * 0.002;
-      if (c.position.x > 50) c.position.x = -50;
-    });
-    updateCamera();
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  // Resize handler
-  window.addEventListener('resize', () => {
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
 })();
 </script>
 </body>
