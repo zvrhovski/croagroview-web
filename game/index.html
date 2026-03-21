@@ -1,684 +1,118 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CroAgroView - Igra Mješovite Sadnje</title>
-    <link rel="icon" href="/logo-v2.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --green-dark: #1B5E20;
-            --green-main: #2E7D32;
-            --green-mid: #43A047;
-            --green-light: #8BC34A;
-            --green-pale: #C8E6C9;
-            --red: #E53935;
-            --red-light: #FFCDD2;
-            --yellow: #FFC107;
-            --white: #ffffff;
-            --gray-light: #F5F7F5;
-            --gray: #6B7280;
-        }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: linear-gradient(135deg, #f0fdf0 0%, #ecfdf5 30%, #fefce8 70%, #f0fdf0 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .game-header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(46,125,50,0.1);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .header-left img { height: 36px; }
-        .header-left span { font-weight: 700; font-size: 1.1rem; color: var(--green-dark); }
-        .header-right { display: flex; align-items: center; gap: 16px; }
-        .score-display {
-            background: linear-gradient(135deg, var(--green-main), var(--green-mid));
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .btn-home {
-            text-decoration: none;
-            color: var(--green-main);
-            font-weight: 600;
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            border-radius: 50px;
-            border: 2px solid var(--green-pale);
-            transition: all 0.3s;
-        }
-        .btn-home:hover { border-color: var(--green-main); background: var(--green-pale); }
-
-        .game-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        .game-intro {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .game-intro h1 {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--green-dark);
-            margin-bottom: 8px;
-        }
-        .game-intro p {
-            color: var(--gray);
-            font-size: 0.95rem;
-        }
-
-        .grid-wrapper {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
-        .grid-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .grid-size-selector { display: flex; gap: 6px; }
-        .grid-size-btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 2px solid var(--green-pale);
-            background: var(--white);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--green-dark);
-            transition: all 0.2s;
-        }
-        .grid-size-btn.active {
-            background: var(--green-main);
-            color: white;
-            border-color: var(--green-main);
-        }
-        .btn-action {
-            padding: 8px 18px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-        .btn-clear { background: var(--red-light); color: var(--red); }
-        .btn-clear:hover { background: var(--red); color: white; }
-        .btn-calculate {
-            background: linear-gradient(135deg, var(--green-main), var(--green-mid));
-            color: white;
-            padding: 10px 24px;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 10px rgba(46,125,50,0.3);
-        }
-        .btn-calculate:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(46,125,50,0.4); }
-
-        .garden-grid {
-            display: grid;
-            gap: 4px;
-            margin-bottom: 16px;
-        }
-        .grid-cell {
-            aspect-ratio: 1;
-            border-radius: 12px;
-            border: 2px dashed #8B6914;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 2rem;
-            transition: all 0.2s;
-            position: relative;
-            background: linear-gradient(145deg, #8B6F47, #6B4F2F);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
-        }
-        .grid-cell:hover {
-            border-color: var(--green-main);
-            background: linear-gradient(145deg, #9B7F57, #7B5F3F);
-            transform: scale(1.03);
-        }
-        .grid-cell.filled {
-            border-style: solid;
-            border-color: var(--green-pale);
-            background: linear-gradient(145deg, #A08060, #7B5F3F);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .grid-cell .remove-btn {
-            display: none;
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--red);
-            color: white;
-            font-size: 0.7rem;
-            border: none;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .grid-cell.filled:hover .remove-btn { display: flex; }
-        .cell-placeholder { font-size: 1.2rem; color: rgba(255,255,255,0.5); }
-
-        .grid-cell.score-good { border-color: var(--green-main); background: #E8F5E9; box-shadow: 0 0 0 2px rgba(46,125,50,0.15); }
-        .grid-cell.score-neutral { border-color: var(--yellow); background: #FFFDE7; box-shadow: 0 0 0 2px rgba(255,193,7,0.15); }
-        .grid-cell.score-bad { border-color: var(--red); background: #FFEBEE; box-shadow: 0 0 0 2px rgba(229,57,53,0.15); }
-        .cell-score {
-            display: none;
-            position: absolute;
-            bottom: 2px;
-            right: 4px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            border-radius: 4px;
-            padding: 1px 4px;
-        }
-        .grid-cell.scored .cell-score { display: block; }
-
-        /* VEGGIE PICKER POPUP */
-        .picker-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: flex-end;
-            justify-content: center;
-            padding: 0;
-        }
-        .picker-overlay.open { display: flex; }
-        .picker-content {
-            background: white;
-            border-radius: 24px 24px 0 0;
-            padding: 20px 16px 30px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 70vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        .picker-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--green-pale);
-        }
-        .picker-header h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--green-dark);
-        }
-        .picker-close {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: var(--gray-light);
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray);
-        }
-        .picker-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .picker-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 12px 6px;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            text-align: center;
-            background: var(--gray-light);
-        }
-        .picker-item:hover { background: #E8F5E9; border-color: var(--green-pale); }
-        .picker-item.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .picker-item .p-emoji { font-size: 2rem; }
-        .picker-item .p-name { font-size: 0.8rem; font-weight: 600; color: var(--green-dark); }
-        .picker-item .p-count { font-size: 0.7rem; color: var(--gray); }
-        .picker-item.disabled .p-count { color: var(--red); font-weight: 600; }
-
-        /* RESULTS MODAL */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 36px;
-            max-width: 480px;
-            width: 100%;
-            text-align: center;
-            animation: modalIn 0.3s ease;
-        }
-        @keyframes modalIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .modal-emoji { font-size: 4rem; margin-bottom: 12px; }
-        .modal-title { font-size: 1.6rem; font-weight: 800; color: var(--green-dark); margin-bottom: 8px; }
-        .modal-score { font-size: 3rem; font-weight: 900; margin: 16px 0; }
-        .modal-score.positive { color: var(--green-main); }
-        .modal-score.negative { color: var(--red); }
-        .modal-breakdown {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 16px 0 24px;
-        }
-        .breakdown-item { text-align: center; }
-        .breakdown-num { font-size: 1.4rem; font-weight: 800; }
-        .breakdown-label { font-size: 0.8rem; color: var(--gray); }
-        .breakdown-good .breakdown-num { color: var(--green-main); }
-        .breakdown-neutral .breakdown-num { color: var(--yellow); }
-        .breakdown-bad .breakdown-num { color: var(--red); }
-        .modal-message { color: var(--gray); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.5; }
-        .modal-buttons { display: flex; gap: 12px; justify-content: center; }
-        .btn-modal {
-            padding: 12px 28px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-        }
-        .btn-play-again {
-            background: linear-gradient(135deg, var(--green-main), var(--green-mid));
-            color: white;
-        }
-        .btn-close-modal { background: var(--gray-light); color: var(--gray); }
-
-        .legend {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-            font-size: 0.82rem;
-            color: var(--gray);
-        }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
-        .legend-dot.good { background: var(--green-main); }
-        .legend-dot.neutral { background: var(--yellow); }
-        .legend-dot.bad { background: var(--red); }
-
-        @media (max-width: 480px) {
-            .game-container { padding: 12px; }
-            .grid-wrapper { padding: 12px; }
-            .grid-cell { font-size: 1.5rem; }
-            .game-intro h1 { font-size: 1.4rem; }
-            .picker-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CroAgroView Igre</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7e8 0%, #e8f5e9 50%, #f1f8e9 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.header {
+  text-align: center;
+  padding: 30px 20px 10px;
+}
+.header h1 {
+  color: #2E7D32;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.header p {
+  color: #555;
+  font-size: 16px;
+  max-width: 500px;
+}
+.games-grid {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 30px 20px;
+  max-width: 700px;
+}
+.game-card {
+  background: white;
+  border-radius: 18px;
+  padding: 30px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.game-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+}
+.game-card h2 {
+  color: #2E7D32;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.game-card p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.game-badge {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 6px 16px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.footer {
+  margin-top: auto;
+  padding: 20px;
+}
+.footer a {
+  color: #2E7D32;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+</style>
 </head>
 <body>
 
-    <div class="game-header">
-        <div class="header-left">
-            <img src="/logo-v2.png" alt="CroAgroView">
-            <span>Vrt Igra</span>
-        </div>
-        <div class="header-right">
-            <div class="score-display" id="scoreDisplay">Bodovi: 0</div>
-            <a href="/" class="btn-home">Natrag</a>
-        </div>
-    </div>
+<div class="header">
+  <h1>🎮 CroAgroView Igre</h1>
+  <p>Uči o poljoprivredi kroz zabavu! Odaberi igru:</p>
+</div>
 
-    <div class="game-container">
-        <div class="game-intro">
-            <h1>Planiraj svoj vrt!</h1>
-            <p>Klikni na prazno polje (+) da odaberes povrce. Osvoji bodove kombiniranjem dobrih susjeda! Svako povrce mozes staviti najvise 2 puta.</p>
-        </div>
+<div class="games-grid">
+  <a href="vrt/" class="game-card">
+    <div class="game-icon">🌱</div>
+    <h2>Planiraj vrt</h2>
+    <p>Postavi povrce na gredicu i provjeri koliko dobro poznajes mjesovitu sadnju. Skupljaj bodove za dobre kombinacije!</p>
+    <span class="game-badge">Edukativna igra</span>
+  </a>
 
-        <div class="grid-wrapper">
-            <div class="grid-controls">
-                <div class="grid-size-selector">
-                    <button class="grid-size-btn" onclick="setGridSize(4,4)">4x4</button>
-                    <button class="grid-size-btn active" onclick="setGridSize(5,5)">5x5</button>
-                    <button class="grid-size-btn" onclick="setGridSize(6,6)">6x6</button>
-                </div>
-                <div style="display:flex;gap:8px;">
-                    <button class="btn-action btn-clear" onclick="clearGrid()">Ocisti</button>
-                    <button class="btn-action btn-calculate" onclick="calculateScore()">Izracunaj bodove!</button>
-                </div>
-            </div>
-            <div class="garden-grid" id="gardenGrid"></div>
-            <div class="legend">
-                <div class="legend-item"><div class="legend-dot good"></div> Dobar susjed (+2)</div>
-                <div class="legend-item"><div class="legend-dot neutral"></div> Neutralno (+1)</div>
-                <div class="legend-item"><div class="legend-dot bad"></div> Los susjed (-1)</div>
-            </div>
-        </div>
-    </div>
+  <a href="puzzle/" class="game-card">
+    <div class="game-icon">🧩</div>
+    <h2>Puzzle</h2>
+    <p>Slozi sliku poljoprivrednog stroja! Odaberi tezinu i natjeci se s prijateljima u broju poteza.</p>
+    <span class="game-badge">Slagalica</span>
+  </a>
+</div>
 
-    <!-- VEGGIE PICKER POPUP -->
-    <div class="picker-overlay" id="pickerOverlay">
-        <div class="picker-content">
-            <div class="picker-header">
-                <h3>Odaberi povrce</h3>
-                <button class="picker-close" onclick="closePicker()">✕</button>
-            </div>
-            <div class="picker-grid" id="pickerGrid"></div>
-        </div>
-    </div>
-
-    <!-- RESULTS MODAL -->
-    <div class="modal-overlay" id="resultModal">
-        <div class="modal-content">
-            <div class="modal-emoji" id="modalEmoji"></div>
-            <div class="modal-title" id="modalTitle"></div>
-            <div class="modal-score" id="modalScore"></div>
-            <div class="modal-breakdown">
-                <div class="breakdown-item breakdown-good">
-                    <div class="breakdown-num" id="goodCount">0</div>
-                    <div class="breakdown-label">Dobrih</div>
-                </div>
-                <div class="breakdown-item breakdown-neutral">
-                    <div class="breakdown-num" id="neutralCount">0</div>
-                    <div class="breakdown-label">Neutralnih</div>
-                </div>
-                <div class="breakdown-item breakdown-bad">
-                    <div class="breakdown-num" id="badCount">0</div>
-                    <div class="breakdown-label">Losih</div>
-                </div>
-            </div>
-            <div class="modal-message" id="modalMessage"></div>
-            <div class="modal-buttons">
-                <button class="btn-modal btn-play-again" onclick="clearGrid(); closeModal();">Nova igra</button>
-                <button class="btn-modal btn-close-modal" onclick="closeModal()">Zatvori</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const MAX_PER_VEGGIE = 2;
-
-        const VEGETABLES = [
-            { id: 'rajcica', name: 'Rajcica', icon: '🍅', good: ['bosiljak','persin','salata','mrkva','luk','cesnjak','celer'], bad: ['krumpir','komarac','kupusnjace'] },
-            { id: 'paprika', name: 'Paprika', icon: '🌶️', good: ['rajcica','bosiljak','luk','mrkva','salata'], bad: ['komarac','grah'] },
-            { id: 'krastavac', name: 'Krastavac', icon: '🥒', good: ['grah','grasak','salata','kopar','luk'], bad: ['krumpir','kadulja'] },
-            { id: 'tikvice', name: 'Tikvice', icon: '🎃', good: ['grah','kukuruz','luk'], bad: ['krumpir'] },
-            { id: 'grah', name: 'Grah', icon: '🫘', good: ['kukuruz','krastavac','mrkva','cikla','salata','tikvice'], bad: ['luk','cesnjak','poriluk'] },
-            { id: 'grasak', name: 'Grasak', icon: '🟢', good: ['mrkva','rotkvica','salata','krastavac'], bad: ['luk','cesnjak','poriluk'] },
-            { id: 'mrkva', name: 'Mrkva', icon: '🥕', good: ['luk','poriluk','grasak','salata','rajcica'], bad: ['kopar'] },
-            { id: 'luk', name: 'Luk', icon: '🧅', good: ['mrkva','cikla','salata','rajcica','jagoda'], bad: ['grah','grasak'] },
-            { id: 'cesnjak', name: 'Cesnjak', icon: '🧄', good: ['rajcica','jagoda','mrkva','cikla','salata'], bad: ['grah','grasak'] },
-            { id: 'kupusnjace', name: 'Kupusnjace', icon: '🥬', good: ['celer','luk','cesnjak','cikla','salata'], bad: ['rajcica','jagoda','grah'] },
-            { id: 'krumpir', name: 'Krumpir', icon: '🥔', good: ['grah','kupusnjace','kukuruz'], bad: ['rajcica','krastavac','tikvice'] },
-            { id: 'salata', name: 'Salata', icon: '🥗', good: ['mrkva','luk','rotkvica','jagoda','rajcica','grasak'], bad: [] },
-            { id: 'rotkvica', name: 'Rotkvica', icon: '🔴', good: ['salata','mrkva','grasak','krastavac'], bad: [] },
-            { id: 'cikla', name: 'Cikla', icon: '🟤', good: ['luk','salata','kupusnjace','grah'], bad: [] },
-            { id: 'celer', name: 'Celer', icon: '🥬', good: ['kupusnjace','rajcica','poriluk'], bad: ['krumpir'] },
-            { id: 'kukuruz', name: 'Kukuruz', icon: '🌽', good: ['grah','tikvice','krastavac'], bad: [] },
-            { id: 'bosiljak', name: 'Bosiljak', icon: '🌿', good: ['rajcica','paprika','krastavac'], bad: ['kadulja'] },
-            { id: 'persin', name: 'Persin', icon: '🌱', good: ['rajcica','mrkva','luk'], bad: ['salata'] },
-            { id: 'kopar', name: 'Kopar', icon: '🌿', good: ['krastavac','kupusnjace','luk'], bad: ['mrkva'] },
-            { id: 'komarac', name: 'Komorac', icon: '🌾', good: [], bad: ['rajcica','paprika','grah','krastavac'] },
-            { id: 'jagoda', name: 'Jagoda', icon: '🍓', good: ['luk','cesnjak','salata','bosiljak'], bad: ['kupusnjace'] },
-            { id: 'poriluk', name: 'Poriluk', icon: '🧅', good: ['mrkva','celer','rajcica'], bad: ['grah','grasak'] },
-        ];
-
-        let gridRows = 5;
-        let gridCols = 5;
-        let grid = [];
-        let scored = false;
-        let activeRow = -1;
-        let activeCol = -1;
-
-        function init() {
-            createGrid();
-        }
-
-        function getVeggieCounts() {
-            const counts = {};
-            for (let r = 0; r < gridRows; r++) {
-                for (let c = 0; c < gridCols; c++) {
-                    if (grid[r][c]) counts[grid[r][c]] = (counts[grid[r][c]] || 0) + 1;
-                }
-            }
-            return counts;
-        }
-
-        function createGrid() {
-            grid = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
-            scored = false;
-            renderGrid();
-            updateScore(0);
-        }
-
-        function renderGrid() {
-            const container = document.getElementById('gardenGrid');
-            container.style.gridTemplateColumns = 'repeat(' + gridCols + ', 1fr)';
-            container.innerHTML = '';
-            for (let r = 0; r < gridRows; r++) {
-                for (let c = 0; c < gridCols; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell' + (grid[r][c] ? ' filled' : '');
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    if (grid[r][c]) {
-                        const veg = VEGETABLES.find(v => v.id === grid[r][c]);
-                        cell.innerHTML = '<span>' + veg.icon + '</span><button class="remove-btn" onclick="event.stopPropagation(); removeCell(' + r + ',' + c + ')">X</button><span class="cell-score"></span>';
-                        cell.onclick = () => openPicker(r, c);
-                    } else {
-                        cell.innerHTML = '<span class="cell-placeholder">+</span>';
-                        cell.onclick = () => openPicker(r, c);
-                    }
-                    container.appendChild(cell);
-                }
-            }
-        }
-
-        function openPicker(r, c) {
-            activeRow = r;
-            activeCol = c;
-            const counts = getVeggieCounts();
-            // If this cell already has a veggie, subtract it from count (replacing)
-            if (grid[r][c]) {
-                counts[grid[r][c]] = (counts[grid[r][c]] || 1) - 1;
-            }
-            const pickerGrid = document.getElementById('pickerGrid');
-            pickerGrid.innerHTML = '';
-            VEGETABLES.forEach(v => {
-                const count = counts[v.id] || 0;
-                const isFull = count >= MAX_PER_VEGGIE;
-                const item = document.createElement('div');
-                item.className = 'picker-item' + (isFull ? ' disabled' : '');
-                item.innerHTML = '<span class="p-emoji">' + v.icon + '</span><span class="p-name">' + v.name + '</span><span class="p-count">' + (isFull ? 'Max (' + MAX_PER_VEGGIE + '/' + MAX_PER_VEGGIE + ')' : count + '/' + MAX_PER_VEGGIE) + '</span>';
-                if (!isFull) {
-                    item.onclick = () => pickVeggie(v.id);
-                }
-                pickerGrid.appendChild(item);
-            });
-            document.getElementById('pickerOverlay').classList.add('open');
-        }
-
-        function pickVeggie(id) {
-            if (scored) scored = false;
-            grid[activeRow][activeCol] = id;
-            closePicker();
-            renderGrid();
-        }
-
-        function closePicker() {
-            document.getElementById('pickerOverlay').classList.remove('open');
-        }
-
-        function removeCell(r, c) {
-            grid[r][c] = null;
-            if (scored) scored = false;
-            renderGrid();
-        }
-
-        function setGridSize(rows, cols) {
-            gridRows = rows;
-            gridCols = cols;
-            document.querySelectorAll('.grid-size-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            createGrid();
-        }
-
-        function clearGrid() { createGrid(); }
-
-        function getRelation(id1, id2) {
-            const v1 = VEGETABLES.find(v => v.id === id1);
-            const v2 = VEGETABLES.find(v => v.id === id2);
-            if (!v1 || !v2) return 'neutral';
-            if (v1.good.includes(id2) || v2.good.includes(id1)) return 'good';
-            if (v1.bad.includes(id2) || v2.bad.includes(id1)) return 'bad';
-            return 'neutral';
-        }
-
-        function getNeighbors(r, c) {
-            const neighbors = [];
-            if (r > 0 && grid[r-1][c]) neighbors.push({ r: r-1, c: c, id: grid[r-1][c] });
-            if (r < gridRows-1 && grid[r+1][c]) neighbors.push({ r: r+1, c: c, id: grid[r+1][c] });
-            if (c > 0 && grid[r][c-1]) neighbors.push({ r: r, c: c-1, id: grid[r][c-1] });
-            if (c < gridCols-1 && grid[r][c+1]) neighbors.push({ r: r, c: c+1, id: grid[r][c+1] });
-            return neighbors;
-        }
-
-        function calculateScore() {
-            let totalScore = 0, goodPairs = 0, neutralPairs = 0, badPairs = 0;
-            const cellScores = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
-            const counted = new Set();
-            let filledCount = 0;
-
-            for (let r = 0; r < gridRows; r++)
-                for (let c = 0; c < gridCols; c++)
-                    if (grid[r][c]) filledCount++;
-
-            if (filledCount < 2) { alert('Postavi barem 2 biljke na grid!'); return; }
-
-            for (let r = 0; r < gridRows; r++) {
-                for (let c = 0; c < gridCols; c++) {
-                    if (!grid[r][c]) continue;
-                    let cellScore = 0, cellBest = 'neutral';
-                    getNeighbors(r, c).forEach(n => {
-                        const pairKey = [Math.min(r*100+c, n.r*100+n.c), Math.max(r*100+c, n.r*100+n.c)].join('-');
-                        const rel = getRelation(grid[r][c], n.id);
-                        if (!counted.has(pairKey)) {
-                            counted.add(pairKey);
-                            if (rel === 'good') { totalScore += 2; goodPairs++; }
-                            else if (rel === 'neutral') { totalScore += 1; neutralPairs++; }
-                            else { totalScore -= 1; badPairs++; }
-                        }
-                        if (rel === 'good') cellScore += 2;
-                        else if (rel === 'neutral') cellScore += 1;
-                        else cellScore -= 1;
-                        if (rel === 'bad') cellBest = 'bad';
-                        else if (rel === 'good' && cellBest !== 'bad') cellBest = 'good';
-                    });
-                    cellScores[r][c] = { score: cellScore, best: cellBest };
-                }
-            }
-
-            scored = true;
-            updateScore(totalScore);
-
-            document.querySelectorAll('.grid-cell').forEach(cell => {
-                const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
-                if (cellScores[r][c]) {
-                    const cs = cellScores[r][c];
-                    cell.classList.add('scored', 'score-' + cs.best);
-                    const scoreEl = cell.querySelector('.cell-score');
-                    if (scoreEl) {
-                        scoreEl.textContent = (cs.score >= 0 ? '+' : '') + cs.score;
-                        scoreEl.style.background = cs.best === 'good' ? '#E8F5E9' : cs.best === 'bad' ? '#FFEBEE' : '#FFFDE7';
-                        scoreEl.style.color = cs.best === 'good' ? '#2E7D32' : cs.best === 'bad' ? '#E53935' : '#F57C00';
-                    }
-                }
-            });
-
-            showResult(totalScore, goodPairs, neutralPairs, badPairs);
-        }
-
-        function updateScore(score) {
-            document.getElementById('scoreDisplay').textContent = 'Bodovi: ' + score;
-        }
-
-        function showResult(score, good, neutral, bad) {
-            let emoji, title, message;
-            const totalPairs = good + neutral + bad;
-            const pct = totalPairs > 0 ? (good / totalPairs * 100) : 0;
-
-            if (score <= 0) { emoji = '😰'; title = 'Treba vjezbanja!'; message = 'Prouci koje se biljke vole, a koje ne podnose. Pokusaj ponovo!'; }
-            else if (pct < 40) { emoji = '🌱'; title = 'Dobar pocetak!'; message = 'Imas potencijala! Probaj kombinirati klasicne parove poput mrkve i luka.'; }
-            else if (pct < 70) { emoji = '🌿'; title = 'Sjajan vrt!'; message = 'Vecina tvojih susjeda se dobro slaze. Malo optimizacije i bit ce savrseno!'; }
-            else if (pct < 90) { emoji = '🌻'; title = 'Odlican vrtlar!'; message = 'Tvoj vrt je fantasticno planiran! Biljke ce ti biti zahvalne.'; }
-            else { emoji = '🏆'; title = 'Majstor vrta!'; message = 'Savrsena harmonija! Tvoj vrt je primjer idealne mjesovite sadnje!'; }
-
-            document.getElementById('modalEmoji').textContent = emoji;
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalScore').textContent = score + ' bodova';
-            document.getElementById('modalScore').className = 'modal-score ' + (score >= 0 ? 'positive' : 'negative');
-            document.getElementById('goodCount').textContent = good;
-            document.getElementById('neutralCount').textContent = neutral;
-            document.getElementById('badCount').textContent = bad;
-            document.getElementById('modalMessage').textContent = message;
-            document.getElementById('resultModal').classList.add('open');
-        }
-
-        function closeModal() { document.getElementById('resultModal').classList.remove('open'); }
-
-        document.getElementById('resultModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-        document.getElementById('pickerOverlay').addEventListener('click', function(e) { if (e.target === this) closePicker(); });
-
-        init();
-    </script>
+<div class="footer">
+  <a href="/">🌾 croagroview.eu</a>
+</div>
 
 </body>
 </html>

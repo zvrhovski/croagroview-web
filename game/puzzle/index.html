@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CroAgroView Puzzle</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7e8 0%, #e8f5e9 50%, #f1f8e9 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.header {
+  text-align: center;
+  padding: 20px;
+}
+.header h1 {
+  color: #2E7D32;
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+.header p {
+  color: #555;
+  font-size: 14px;
+}
+.controls {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.controls button, .controls select {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.controls select {
+  background: white;
+  border: 2px solid #4CAF50;
+  color: #2E7D32;
+}
+.btn-shuffle {
+  background: #4CAF50;
+  color: white;
+}
+.btn-shuffle:hover { background: #388E3C; }
+.btn-hint {
+  background: #FF9800;
+  color: white;
+}
+.btn-hint:hover { background: #F57C00; }
+.btn-home {
+  background: white;
+  color: #2E7D32;
+  border: 2px solid #4CAF50;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.stats {
+  display: flex;
+  gap: 20px;
+  margin: 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+.stats span { font-weight: 700; color: #2E7D32; }
+
+.puzzle-container {
+  position: relative;
+  margin: 10px auto;
+  border: 4px solid #4CAF50;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #333;
+  touch-action: none;
+}
+
+.puzzle-piece {
+  position: absolute;
+  background-image: url('puzzle.jpg');
+  background-size: var(--full-w) var(--full-h);
+  cursor: grab;
+  border: 1px solid rgba(255,255,255,0.3);
+  transition: box-shadow 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.puzzle-piece:hover {
+  box-shadow: 0 0 10px rgba(76,175,80,0.6);
+  z-index: 10;
+}
+.puzzle-piece.dragging {
+  opacity: 0.7;
+  cursor: grabbing;
+  z-index: 100;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+}
+.puzzle-piece.correct {
+  border: 2px solid #4CAF50;
+  box-shadow: 0 0 8px rgba(76,175,80,0.5);
+  cursor: default;
+}
+.puzzle-piece.hint {
+  animation: hintPulse 1s ease-in-out 3;
+}
+@keyframes hintPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,152,0,0.3); }
+  50% { box-shadow: 0 0 20px rgba(255,152,0,0.8); }
+}
+
+.preview-toggle {
+  margin: 10px 0;
+}
+.preview-toggle button {
+  padding: 8px 16px;
+  border: 2px solid #4CAF50;
+  background: white;
+  color: #2E7D32;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.preview-toggle button:hover { background: #E8F5E9; }
+.preview-img {
+  display: none;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 2px solid #4CAF50;
+  margin: 10px auto;
+}
+.preview-img.show { display: block; }
+
+.win-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.win-overlay.show { display: flex; }
+.win-box {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  max-width: 400px;
+  animation: popIn 0.5s ease;
+}
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.win-box h2 { color: #2E7D32; font-size: 28px; margin-bottom: 10px; }
+.win-box p { color: #555; font-size: 16px; margin-bottom: 5px; }
+.win-box .trophy { font-size: 60px; margin-bottom: 15px; }
+.win-box button {
+  margin-top: 15px;
+  padding: 12px 30px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.footer {
+  margin: 20px 0;
+  text-align: center;
+}
+.footer a {
+  color: #2E7D32;
+  text-decoration: none;
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧩 CroAgroView Puzzle</h1>
+  <p>Posloži sliku i otkrij poljoprivredni stroj!</p>
+</div>
+
+<div class="controls">
+  <select id="difficulty" onchange="initPuzzle()">
+    <option value="3x3">Lako (3x3)</option>
+    <option value="4x4" selected>Srednje (4x4)</option>
+    <option value="5x5">Teško (5x5)</option>
+    <option value="6x4">Pro (6x4)</option>
+  </select>
+  <button class="btn-shuffle" onclick="shufflePieces()">🔀 Pomiješaj</button>
+  <button class="btn-hint" onclick="showHint()">💡 Pomoć</button>
+  <a href="/" class="btn-home controls-btn">🏠 Početna</a>
+</div>
+
+<div class="stats">
+  Potezi: <span id="moves">0</span> &nbsp;|&nbsp; Vrijeme: <span id="timer">00:00</span>
+</div>
+
+<div class="preview-toggle">
+  <button onclick="togglePreview()">🖼️ Prikaži/sakrij original</button>
+</div>
+<img src="puzzle.jpg" class="preview-img" id="previewImg" alt="Original">
+
+<div class="puzzle-container" id="puzzleContainer"></div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-box">
+    <div class="trophy">🏆</div>
+    <h2>Bravo!</h2>
+    <p>Složio si puzzle!</p>
+    <p>Potezi: <span id="winMoves">0</span></p>
+    <p>Vrijeme: <span id="winTime">00:00</span></p>
+    <button onclick="playAgain()">🔄 Igraj ponovo</button>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="/">🌾 croagroview.eu</a>
+</div>
+
+<script>
+const img = new Image();
+img.src = 'puzzle.jpg';
+
+let gridCols = 4;
+let gridRows = 4;
+let pieces = [];
+let moves = 0;
+let timerInterval = null;
+let seconds = 0;
+let selectedPiece = null;
+let correctCount = 0;
+let containerW, containerH, pieceW, pieceH;
+
+img.onload = () => initPuzzle();
+
+function initPuzzle() {
+  const val = document.getElementById('difficulty').value;
+  const parts = val.split('x');
+  gridCols = parseInt(parts[0]);
+  gridRows = parseInt(parts[1]);
+  moves = 0;
+  seconds = 0;
+  correctCount = 0;
+  document.getElementById('moves').textContent = '0';
+  document.getElementById('timer').textContent = '00:00';
+  document.getElementById('winOverlay').classList.remove('show');
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+
+  const maxW = Math.min(window.innerWidth - 30, 600);
+  const ratio = img.naturalHeight / img.naturalWidth;
+  containerW = maxW;
+  containerH = Math.round(maxW * ratio);
+  pieceW = containerW / gridCols;
+  pieceH = containerH / gridRows;
+
+  const container = document.getElementById('puzzleContainer');
+  container.style.width = containerW + 'px';
+  container.style.height = containerH + 'px';
+  container.style.setProperty('--full-w', containerW + 'px');
+  container.style.setProperty('--full-h', containerH + 'px');
+  container.innerHTML = '';
+
+  pieces = [];
+  for (let row = 0; row < gridRows; row++) {
+    for (let col = 0; col < gridCols; col++) {
+      const piece = document.createElement('div');
+      piece.className = 'puzzle-piece';
+      piece.style.width = pieceW + 'px';
+      piece.style.height = pieceH + 'px';
+      piece.style.backgroundPosition = `-${col * pieceW}px -${row * pieceH}px`;
+      piece.style.setProperty('--full-w', containerW + 'px');
+      piece.style.setProperty('--full-h', containerH + 'px');
+      piece.dataset.correctRow = row;
+      piece.dataset.correctCol = col;
+      piece.dataset.currentRow = row;
+      piece.dataset.currentCol = col;
+      piece.style.left = col * pieceW + 'px';
+      piece.style.top = row * pieceH + 'px';
+
+      // Touch & mouse events
+      piece.addEventListener('mousedown', onPieceDown);
+      piece.addEventListener('touchstart', onPieceTouchStart, {passive: false});
+
+      container.appendChild(piece);
+      pieces.push(piece);
+    }
+  }
+
+  shufflePieces();
+}
+
+function shufflePieces() {
+  moves = 0;
+  seconds = 0;
+  correctCount = 0;
+  document.getElementById('moves').textContent = '0';
+  document.getElementById('timer').textContent = '00:00';
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+
+  // Fisher-Yates shuffle positions
+  const positions = [];
+  for (let r = 0; r < gridRows; r++)
+    for (let c = 0; c < gridCols; c++)
+      positions.push({row: r, col: c});
+
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  pieces.forEach((piece, idx) => {
+    piece.dataset.currentRow = positions[idx].row;
+    piece.dataset.currentCol = positions[idx].col;
+    piece.style.left = positions[idx].col * pieceW + 'px';
+    piece.style.top = positions[idx].row * pieceH + 'px';
+    piece.classList.remove('correct');
+  });
+
+  checkAllCorrect();
+}
+
+function startTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = m + ':' + s;
+  }, 1000);
+}
+
+function onPieceDown(e) {
+  if (e.target.classList.contains('correct')) return;
+  e.preventDefault();
+  startTimer();
+  if (!selectedPiece) {
+    selectedPiece = e.target;
+    selectedPiece.classList.add('dragging');
+  } else {
+    swapPieces(selectedPiece, e.target);
+    selectedPiece.classList.remove('dragging');
+    selectedPiece = null;
+  }
+}
+
+function onPieceTouchStart(e) {
+  if (e.target.classList.contains('correct')) return;
+  e.preventDefault();
+  startTimer();
+  if (!selectedPiece) {
+    selectedPiece = e.target;
+    selectedPiece.classList.add('dragging');
+  } else {
+    swapPieces(selectedPiece, e.target);
+    selectedPiece.classList.remove('dragging');
+    selectedPiece = null;
+  }
+}
+
+function swapPieces(a, b) {
+  if (a === b) {
+    a.classList.remove('dragging');
+    selectedPiece = null;
+    return;
+  }
+  const aRow = a.dataset.currentRow;
+  const aCol = a.dataset.currentCol;
+  const bRow = b.dataset.currentRow;
+  const bCol = b.dataset.currentCol;
+
+  a.dataset.currentRow = bRow;
+  a.dataset.currentCol = bCol;
+  a.style.left = bCol * pieceW + 'px';
+  a.style.top = bRow * pieceH + 'px';
+
+  b.dataset.currentRow = aRow;
+  b.dataset.currentCol = aCol;
+  b.style.left = aCol * pieceW + 'px';
+  b.style.top = aRow * pieceH + 'px';
+
+  moves++;
+  document.getElementById('moves').textContent = moves;
+
+  checkPiece(a);
+  checkPiece(b);
+  checkAllCorrect();
+}
+
+function checkPiece(piece) {
+  if (piece.dataset.currentRow === piece.dataset.correctRow &&
+      piece.dataset.currentCol === piece.dataset.correctCol) {
+    piece.classList.add('correct');
+  } else {
+    piece.classList.remove('correct');
+  }
+}
+
+function checkAllCorrect() {
+  correctCount = pieces.filter(p => p.classList.contains('correct')).length;
+  if (correctCount === pieces.length) {
+    // WIN!
+    clearInterval(timerInterval);
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('winMoves').textContent = moves;
+    document.getElementById('winTime').textContent = m + ':' + s;
+    setTimeout(() => {
+      document.getElementById('winOverlay').classList.add('show');
+    }, 300);
+  }
+}
+
+function showHint() {
+  // Find first incorrect piece and briefly highlight where it should go
+  const wrong = pieces.find(p => !p.classList.contains('correct'));
+  if (!wrong) return;
+  wrong.classList.add('hint');
+  setTimeout(() => wrong.classList.remove('hint'), 3000);
+}
+
+function togglePreview() {
+  document.getElementById('previewImg').classList.toggle('show');
+}
+
+function playAgain() {
+  document.getElementById('winOverlay').classList.remove('show');
+  shufflePieces();
+}
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  if (pieces.length > 0) initPuzzle();
+});
+</script>
+</body>
+</html>
