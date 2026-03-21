@@ -144,7 +144,7 @@
         .grid-cell {
             aspect-ratio: 1;
             border-radius: 12px;
-            border: 2px dashed var(--green-pale);
+            border: 2px dashed #8B6914;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -152,17 +152,19 @@
             font-size: 2rem;
             transition: all 0.2s;
             position: relative;
-            background: var(--gray-light);
+            background: linear-gradient(145deg, #8B6F47, #6B4F2F);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
         }
         .grid-cell:hover {
             border-color: var(--green-main);
-            background: #E8F5E9;
+            background: linear-gradient(145deg, #9B7F57, #7B5F3F);
             transform: scale(1.03);
         }
         .grid-cell.filled {
             border-style: solid;
             border-color: var(--green-pale);
-            background: var(--white);
+            background: linear-gradient(145deg, #A08060, #7B5F3F);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
         .grid-cell .remove-btn {
             display: none;
@@ -183,7 +185,7 @@
             line-height: 1;
         }
         .grid-cell.filled:hover .remove-btn { display: flex; }
-        .cell-placeholder { font-size: 1.2rem; color: #ccc; }
+        .cell-placeholder { font-size: 1.2rem; color: rgba(255,255,255,0.5); }
 
         .grid-cell.score-good { border-color: var(--green-main); background: #E8F5E9; box-shadow: 0 0 0 2px rgba(46,125,50,0.15); }
         .grid-cell.score-neutral { border-color: var(--yellow); background: #FFFDE7; box-shadow: 0 0 0 2px rgba(255,193,7,0.15); }
