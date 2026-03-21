@@ -584,19 +584,8 @@
             <h2>Pogledajte na YouTube kanalu</h2>
             <p>Edukativni sadržaj, tutoriali i savjeti za moderne poljoprivrednike.</p>
         </div>
-        <div class="videos-grid">
-            <div class="video-card">
-                <iframe src="https://www.youtube.com/embed/mpVfgl5lIYs" allowfullscreen loading="lazy"></iframe>
-            </div>
-            <div class="video-card">
-                <iframe src="https://www.youtube.com/embed/Akp8guUZu_E" allowfullscreen loading="lazy"></iframe>
-            </div>
-            <div class="video-card">
-                <iframe src="https://www.youtube.com/embed/aOJe3JlAr9U" allowfullscreen loading="lazy"></iframe>
-            </div>
-            <div class="video-card">
-                <iframe src="https://www.youtube.com/embed/EU4smmsrqXQ" allowfullscreen loading="lazy"></iframe>
-            </div>
+        <div class="videos-grid" id="videosGrid">
+            <!-- Videos loaded dynamically from videos.json -->
         </div>
     </section>
 
@@ -757,6 +746,20 @@
                 }
             });
         }, { threshold: 0.1 });
+
+        // Load videos from videos.json
+        fetch('videos.json')
+            .then(r => r.json())
+            .then(videos => {
+                const grid = document.getElementById('videosGrid');
+                videos.forEach(v => {
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.innerHTML = '<iframe src="https://www.youtube.com/embed/' + v.id + '" allowfullscreen loading="lazy"></iframe>';
+                    grid.appendChild(card);
+                });
+            })
+            .catch(() => {});
 
         document.querySelectorAll('.feature-card, .module-card, .stat-item').forEach(el => {
             el.style.opacity = '0';
