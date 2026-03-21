@@ -17,7 +17,6 @@
             --red: #E53935;
             --red-light: #FFCDD2;
             --yellow: #FFC107;
-            --yellow-light: #FFF9C4;
             --white: #ffffff;
             --gray-light: #F5F7F5;
             --gray: #6B7280;
@@ -30,7 +29,6 @@
             color: #333;
         }
 
-        /* HEADER */
         .game-header {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
@@ -67,14 +65,11 @@
         }
         .btn-home:hover { border-color: var(--green-main); background: var(--green-pale); }
 
-        /* MAIN LAYOUT */
         .game-container {
             max-width: 600px;
             margin: 0 auto;
             padding: 24px;
         }
-
-        /* GAME INTRO */
         .game-intro {
             text-align: center;
             margin-bottom: 20px;
@@ -90,56 +85,6 @@
             font-size: 0.95rem;
         }
 
-        /* VEGGIE DROPDOWN */
-        .veggie-picker {
-            margin-bottom: 16px;
-        }
-        .veggie-picker label {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--green-dark);
-            margin-bottom: 6px;
-            display: block;
-        }
-        .veggie-select-wrap {
-            position: relative;
-        }
-        .veggie-select {
-            width: 100%;
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 2px solid var(--green-pale);
-            background: var(--white);
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            color: var(--green-dark);
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .veggie-select:focus { border-color: var(--green-main); }
-        .veggie-select-wrap::after {
-            content: '▼';
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.7rem;
-            color: var(--gray);
-            pointer-events: none;
-        }
-        .veggie-count-info {
-            margin-top: 6px;
-            font-size: 0.8rem;
-            color: var(--gray);
-            text-align: center;
-        }
-        .veggie-count-info .full { color: var(--red); font-weight: 600; }
-
-        /* GRID */
         .grid-wrapper {
             background: var(--white);
             border-radius: 20px;
@@ -154,10 +99,7 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-        .grid-size-selector {
-            display: flex;
-            gap: 6px;
-        }
+        .grid-size-selector { display: flex; gap: 6px; }
         .grid-size-btn {
             padding: 6px 14px;
             border-radius: 8px;
@@ -183,10 +125,7 @@
             font-size: 0.85rem;
             transition: all 0.3s;
         }
-        .btn-clear {
-            background: var(--red-light);
-            color: var(--red);
-        }
+        .btn-clear { background: var(--red-light); color: var(--red); }
         .btn-clear:hover { background: var(--red); color: white; }
         .btn-calculate {
             background: linear-gradient(135deg, var(--green-main), var(--green-mid));
@@ -244,12 +183,8 @@
             line-height: 1;
         }
         .grid-cell.filled:hover .remove-btn { display: flex; }
-        .cell-placeholder {
-            font-size: 1.2rem;
-            color: #ccc;
-        }
+        .cell-placeholder { font-size: 1.2rem; color: #ccc; }
 
-        /* SCORING HIGHLIGHTS */
         .grid-cell.score-good { border-color: var(--green-main); background: #E8F5E9; box-shadow: 0 0 0 2px rgba(46,125,50,0.15); }
         .grid-cell.score-neutral { border-color: var(--yellow); background: #FFFDE7; box-shadow: 0 0 0 2px rgba(255,193,7,0.15); }
         .grid-cell.score-bad { border-color: var(--red); background: #FFEBEE; box-shadow: 0 0 0 2px rgba(229,57,53,0.15); }
@@ -264,6 +199,86 @@
             padding: 1px 4px;
         }
         .grid-cell.scored .cell-score { display: block; }
+
+        /* VEGGIE PICKER POPUP */
+        .picker-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0;
+        }
+        .picker-overlay.open { display: flex; }
+        .picker-content {
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 20px 16px 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--green-pale);
+        }
+        .picker-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--green-dark);
+        }
+        .picker-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--gray-light);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+        .picker-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .picker-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 6px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+            background: var(--gray-light);
+        }
+        .picker-item:hover { background: #E8F5E9; border-color: var(--green-pale); }
+        .picker-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .picker-item .p-emoji { font-size: 2rem; }
+        .picker-item .p-name { font-size: 0.8rem; font-weight: 600; color: var(--green-dark); }
+        .picker-item .p-count { font-size: 0.7rem; color: var(--gray); }
+        .picker-item.disabled .p-count { color: var(--red); font-weight: 600; }
 
         /* RESULTS MODAL */
         .modal-overlay {
@@ -322,12 +337,8 @@
             background: linear-gradient(135deg, var(--green-main), var(--green-mid));
             color: white;
         }
-        .btn-close-modal {
-            background: var(--gray-light);
-            color: var(--gray);
-        }
+        .btn-close-modal { background: var(--gray-light); color: var(--gray); }
 
-        /* LEGEND */
         .legend {
             display: flex;
             gap: 16px;
@@ -337,27 +348,22 @@
             color: var(--gray);
         }
         .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
         .legend-dot.good { background: var(--green-main); }
         .legend-dot.neutral { background: var(--yellow); }
         .legend-dot.bad { background: var(--red); }
 
-        /* RESPONSIVE */
         @media (max-width: 480px) {
             .game-container { padding: 12px; }
             .grid-wrapper { padding: 12px; }
             .grid-cell { font-size: 1.5rem; }
             .game-intro h1 { font-size: 1.4rem; }
+            .picker-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
     <div class="game-header">
         <div class="header-left">
             <img src="/logo-v2.png" alt="CroAgroView">
@@ -369,22 +375,10 @@
         </div>
     </div>
 
-    <!-- GAME -->
     <div class="game-container">
         <div class="game-intro">
             <h1>Planiraj svoj vrt!</h1>
-            <p>Odaberi povrce iz izbornika, postavi na polje i osvoji bodove kombiniranjem dobrih susjeda. Svako povrce mozes staviti najvise 2 puta!</p>
-        </div>
-
-        <!-- VEGGIE DROPDOWN -->
-        <div class="veggie-picker">
-            <label>Odaberi povrce za sadnju:</label>
-            <div class="veggie-select-wrap">
-                <select class="veggie-select" id="veggieSelect" onchange="selectVeggie(this.value)">
-                    <option value="">-- Odaberi povrce --</option>
-                </select>
-            </div>
-            <div class="veggie-count-info" id="countInfo"></div>
+            <p>Klikni na prazno polje (+) da odaberes povrce. Osvoji bodove kombiniranjem dobrih susjeda! Svako povrce mozes staviti najvise 2 puta.</p>
         </div>
 
         <div class="grid-wrapper">
@@ -396,7 +390,7 @@
                 </div>
                 <div style="display:flex;gap:8px;">
                     <button class="btn-action btn-clear" onclick="clearGrid()">Ocisti</button>
-                    <button class="btn-action btn-calculate" id="btnCalc" onclick="calculateScore()">Izracunaj bodove!</button>
+                    <button class="btn-action btn-calculate" onclick="calculateScore()">Izracunaj bodove!</button>
                 </div>
             </div>
             <div class="garden-grid" id="gardenGrid"></div>
@@ -405,6 +399,17 @@
                 <div class="legend-item"><div class="legend-dot neutral"></div> Neutralno (+1)</div>
                 <div class="legend-item"><div class="legend-dot bad"></div> Los susjed (-1)</div>
             </div>
+        </div>
+    </div>
+
+    <!-- VEGGIE PICKER POPUP -->
+    <div class="picker-overlay" id="pickerOverlay">
+        <div class="picker-content">
+            <div class="picker-header">
+                <h3>Odaberi povrce</h3>
+                <button class="picker-close" onclick="closePicker()">✕</button>
+            </div>
+            <div class="picker-grid" id="pickerGrid"></div>
         </div>
     </div>
 
@@ -467,11 +472,11 @@
         let gridRows = 5;
         let gridCols = 5;
         let grid = [];
-        let selectedVeggie = null;
         let scored = false;
+        let activeRow = -1;
+        let activeCol = -1;
 
         function init() {
-            renderDropdown();
             createGrid();
         }
 
@@ -479,61 +484,16 @@
             const counts = {};
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
-                    if (grid[r][c]) {
-                        counts[grid[r][c]] = (counts[grid[r][c]] || 0) + 1;
-                    }
+                    if (grid[r][c]) counts[grid[r][c]] = (counts[grid[r][c]] || 0) + 1;
                 }
             }
             return counts;
-        }
-
-        function renderDropdown() {
-            const select = document.getElementById('veggieSelect');
-            const currentVal = select.value;
-            select.innerHTML = '<option value="">-- Odaberi povrce --</option>';
-            const counts = getVeggieCounts();
-            VEGETABLES.forEach(v => {
-                const count = counts[v.id] || 0;
-                const opt = document.createElement('option');
-                opt.value = v.id;
-                opt.textContent = v.icon + ' ' + v.name + (count > 0 ? ' (' + count + '/' + MAX_PER_VEGGIE + ')' : '');
-                if (count >= MAX_PER_VEGGIE) {
-                    opt.disabled = true;
-                    opt.textContent += ' ✓';
-                }
-                select.appendChild(opt);
-            });
-            if (currentVal && !counts[currentVal] || (counts[currentVal] || 0) < MAX_PER_VEGGIE) {
-                select.value = currentVal;
-            }
-            updateCountInfo();
-        }
-
-        function updateCountInfo() {
-            const counts = getVeggieCounts();
-            if (!selectedVeggie) {
-                document.getElementById('countInfo').innerHTML = '';
-                return;
-            }
-            const v = VEGETABLES.find(x => x.id === selectedVeggie);
-            const count = counts[selectedVeggie] || 0;
-            if (count >= MAX_PER_VEGGIE) {
-                document.getElementById('countInfo').innerHTML = v.icon + ' ' + v.name + ': <span class="full">Maksimalan broj (' + MAX_PER_VEGGIE + '/' + MAX_PER_VEGGIE + ')</span>';
-            } else {
-                document.getElementById('countInfo').innerHTML = v.icon + ' ' + v.name + ': ' + count + '/' + MAX_PER_VEGGIE + ' postavljeno';
-            }
-        }
-
-        function selectVeggie(id) {
-            selectedVeggie = id || null;
-            updateCountInfo();
         }
 
         function createGrid() {
             grid = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
             scored = false;
             renderGrid();
-            renderDropdown();
             updateScore(0);
         }
 
@@ -550,41 +510,55 @@
                     if (grid[r][c]) {
                         const veg = VEGETABLES.find(v => v.id === grid[r][c]);
                         cell.innerHTML = '<span>' + veg.icon + '</span><button class="remove-btn" onclick="event.stopPropagation(); removeCell(' + r + ',' + c + ')">X</button><span class="cell-score"></span>';
+                        cell.onclick = () => openPicker(r, c);
                     } else {
                         cell.innerHTML = '<span class="cell-placeholder">+</span>';
+                        cell.onclick = () => openPicker(r, c);
                     }
-                    cell.onclick = () => placeVeggie(r, c);
                     container.appendChild(cell);
                 }
             }
         }
 
-        function placeVeggie(r, c) {
-            if (!selectedVeggie) {
-                alert('Prvo odaberi povrce iz izbornika!');
-                return;
-            }
-            // Check max count
+        function openPicker(r, c) {
+            activeRow = r;
+            activeCol = c;
             const counts = getVeggieCounts();
-            const currentInCell = grid[r][c];
-            const countOfSelected = counts[selectedVeggie] || 0;
-            // If replacing same veggie, no need to check
-            if (currentInCell !== selectedVeggie && countOfSelected >= MAX_PER_VEGGIE) {
-                const v = VEGETABLES.find(x => x.id === selectedVeggie);
-                alert(v.icon + ' ' + v.name + ' je vec postavljen ' + MAX_PER_VEGGIE + ' puta!');
-                return;
+            // If this cell already has a veggie, subtract it from count (replacing)
+            if (grid[r][c]) {
+                counts[grid[r][c]] = (counts[grid[r][c]] || 1) - 1;
             }
-            if (scored) { scored = false; }
-            grid[r][c] = selectedVeggie;
+            const pickerGrid = document.getElementById('pickerGrid');
+            pickerGrid.innerHTML = '';
+            VEGETABLES.forEach(v => {
+                const count = counts[v.id] || 0;
+                const isFull = count >= MAX_PER_VEGGIE;
+                const item = document.createElement('div');
+                item.className = 'picker-item' + (isFull ? ' disabled' : '');
+                item.innerHTML = '<span class="p-emoji">' + v.icon + '</span><span class="p-name">' + v.name + '</span><span class="p-count">' + (isFull ? 'Max (' + MAX_PER_VEGGIE + '/' + MAX_PER_VEGGIE + ')' : count + '/' + MAX_PER_VEGGIE) + '</span>';
+                if (!isFull) {
+                    item.onclick = () => pickVeggie(v.id);
+                }
+                pickerGrid.appendChild(item);
+            });
+            document.getElementById('pickerOverlay').classList.add('open');
+        }
+
+        function pickVeggie(id) {
+            if (scored) scored = false;
+            grid[activeRow][activeCol] = id;
+            closePicker();
             renderGrid();
-            renderDropdown();
+        }
+
+        function closePicker() {
+            document.getElementById('pickerOverlay').classList.remove('open');
         }
 
         function removeCell(r, c) {
             grid[r][c] = null;
-            if (scored) { scored = false; }
+            if (scored) scored = false;
             renderGrid();
-            renderDropdown();
         }
 
         function setGridSize(rows, cols) {
@@ -595,9 +569,7 @@
             createGrid();
         }
 
-        function clearGrid() {
-            createGrid();
-        }
+        function clearGrid() { createGrid(); }
 
         function getRelation(id1, id2) {
             const v1 = VEGETABLES.find(v => v.id === id1);
@@ -618,32 +590,22 @@
         }
 
         function calculateScore() {
-            let totalScore = 0;
-            let goodPairs = 0;
-            let neutralPairs = 0;
-            let badPairs = 0;
+            let totalScore = 0, goodPairs = 0, neutralPairs = 0, badPairs = 0;
             const cellScores = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
             const counted = new Set();
-
             let filledCount = 0;
-            for (let r = 0; r < gridRows; r++) {
-                for (let c = 0; c < gridCols; c++) {
-                    if (grid[r][c]) filledCount++;
-                }
-            }
 
-            if (filledCount < 2) {
-                alert('Postavi barem 2 biljke na grid!');
-                return;
-            }
+            for (let r = 0; r < gridRows; r++)
+                for (let c = 0; c < gridCols; c++)
+                    if (grid[r][c]) filledCount++;
+
+            if (filledCount < 2) { alert('Postavi barem 2 biljke na grid!'); return; }
 
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
                     if (!grid[r][c]) continue;
-                    let cellScore = 0;
-                    let cellBest = 'neutral';
-                    const neighbors = getNeighbors(r, c);
-                    neighbors.forEach(n => {
+                    let cellScore = 0, cellBest = 'neutral';
+                    getNeighbors(r, c).forEach(n => {
                         const pairKey = [Math.min(r*100+c, n.r*100+n.c), Math.max(r*100+c, n.r*100+n.c)].join('-');
                         const rel = getRelation(grid[r][c], n.id);
                         if (!counted.has(pairKey)) {
@@ -665,14 +627,11 @@
             scored = true;
             updateScore(totalScore);
 
-            const cells = document.querySelectorAll('.grid-cell');
-            cells.forEach(cell => {
-                const r = parseInt(cell.dataset.row);
-                const c = parseInt(cell.dataset.col);
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
                 if (cellScores[r][c]) {
                     const cs = cellScores[r][c];
-                    cell.classList.add('scored');
-                    cell.classList.add('score-' + cs.best);
+                    cell.classList.add('scored', 'score-' + cs.best);
                     const scoreEl = cell.querySelector('.cell-score');
                     if (scoreEl) {
                         scoreEl.textContent = (cs.score >= 0 ? '+' : '') + cs.score;
@@ -682,34 +641,23 @@
                 }
             });
 
-            showResult(totalScore, goodPairs, neutralPairs, badPairs, filledCount);
+            showResult(totalScore, goodPairs, neutralPairs, badPairs);
         }
 
         function updateScore(score) {
             document.getElementById('scoreDisplay').textContent = 'Bodovi: ' + score;
         }
 
-        function showResult(score, good, neutral, bad, filled) {
+        function showResult(score, good, neutral, bad) {
             let emoji, title, message;
             const totalPairs = good + neutral + bad;
             const pct = totalPairs > 0 ? (good / totalPairs * 100) : 0;
 
-            if (score <= 0) {
-                emoji = '😰'; title = 'Treba vjezbanja!';
-                message = 'Prouci koje se biljke vole, a koje ne podnose. Pokusaj ponovo!';
-            } else if (pct < 40) {
-                emoji = '🌱'; title = 'Dobar pocetak!';
-                message = 'Imas potencijala! Probaj kombinirati klasicne parove poput mrkve i luka.';
-            } else if (pct < 70) {
-                emoji = '🌿'; title = 'Sjajan vrt!';
-                message = 'Vecina tvojih susjeda se dobro slaze. Malo optimizacije i bit ce savrseno!';
-            } else if (pct < 90) {
-                emoji = '🌻'; title = 'Odlican vrtlar!';
-                message = 'Tvoj vrt je fantasticno planiran! Biljke ce ti biti zahvalne.';
-            } else {
-                emoji = '🏆'; title = 'Majstor vrta!';
-                message = 'Savrsena harmonija! Tvoj vrt je primjer idealne mjesovite sadnje!';
-            }
+            if (score <= 0) { emoji = '😰'; title = 'Treba vjezbanja!'; message = 'Prouci koje se biljke vole, a koje ne podnose. Pokusaj ponovo!'; }
+            else if (pct < 40) { emoji = '🌱'; title = 'Dobar pocetak!'; message = 'Imas potencijala! Probaj kombinirati klasicne parove poput mrkve i luka.'; }
+            else if (pct < 70) { emoji = '🌿'; title = 'Sjajan vrt!'; message = 'Vecina tvojih susjeda se dobro slaze. Malo optimizacije i bit ce savrseno!'; }
+            else if (pct < 90) { emoji = '🌻'; title = 'Odlican vrtlar!'; message = 'Tvoj vrt je fantasticno planiran! Biljke ce ti biti zahvalne.'; }
+            else { emoji = '🏆'; title = 'Majstor vrta!'; message = 'Savrsena harmonija! Tvoj vrt je primjer idealne mjesovite sadnje!'; }
 
             document.getElementById('modalEmoji').textContent = emoji;
             document.getElementById('modalTitle').textContent = title;
@@ -722,13 +670,10 @@
             document.getElementById('resultModal').classList.add('open');
         }
 
-        function closeModal() {
-            document.getElementById('resultModal').classList.remove('open');
-        }
+        function closeModal() { document.getElementById('resultModal').classList.remove('open'); }
 
-        document.getElementById('resultModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
+        document.getElementById('resultModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+        document.getElementById('pickerOverlay').addEventListener('click', function(e) { if (e.target === this) closePicker(); });
 
         init();
     </script>
