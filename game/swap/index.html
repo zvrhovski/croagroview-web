@@ -135,7 +135,8 @@ body {
   </select>
   <button class="btn-new" onclick="initPuzzle()">🔀 Nova igra</button>
   <button class="btn-hint" onclick="showHint()">💡 Pomoc</button>
-  <button class="btn-preview" onclick="togglePreview()">🖼️ Original</button>
+  <button class="btn-new" onclick="changeImage()" style="background:#1565C0;">🖼️ Promijeni sliku</button>
+  <button class="btn-preview" onclick="togglePreview()">👁️ Original</button>
   <a href="/game" class="btn-home">🎮 Igre</a>
 </div>
 
@@ -165,8 +166,17 @@ body {
 </div>
 
 <script>
+const images = ['puzzle.jpg','puzzle1.jpg','puzzle2.jpg','puzzle3.jpg','puzzle4.jpg'];
+let currentImgIdx = 0;
 const img = new Image();
-img.src = 'puzzle.jpg';
+img.src = images[currentImgIdx];
+
+function changeImage() {
+  currentImgIdx = (currentImgIdx + 1) % images.length;
+  img.src = images[currentImgIdx];
+  document.getElementById('previewImg').src = images[currentImgIdx];
+  img.onload = () => initPuzzle();
+}
 
 let cols = 4, rows = 3;
 let pieces = [];
@@ -209,6 +219,7 @@ function initPuzzle() {
       piece.style.width = pw + 'px';
       piece.style.height = ph + 'px';
       piece.style.backgroundSize = containerW + 'px ' + containerH + 'px';
+      piece.style.backgroundImage = "url('" + images[currentImgIdx] + "')";
       piece.style.backgroundPosition = `-${c * pw}px -${r * ph}px`;
       piece.dataset.correctRow = r;
       piece.dataset.correctCol = c;
