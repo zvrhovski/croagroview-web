@@ -2,7 +2,7 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CroAgroView Puzzle</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,219 +13,199 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-x: hidden;
 }
-.header {
-  text-align: center;
-  padding: 20px;
-}
-.header h1 {
-  color: #2E7D32;
-  font-size: 28px;
-  margin-bottom: 5px;
-}
-.header p {
-  color: #555;
-  font-size: 14px;
-}
+.header { text-align: center; padding: 15px 10px 5px; }
+.header h1 { color: #2E7D32; font-size: 24px; margin-bottom: 3px; }
+.header p { color: #555; font-size: 13px; }
+
 .controls {
-  display: flex;
-  gap: 10px;
-  margin: 10px 0;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; justify-content: center;
 }
-.controls button, .controls select {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+.controls button, .controls select, .controls a {
+  padding: 8px 14px; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none;
 }
-.controls select {
-  background: white;
-  border: 2px solid #4CAF50;
-  color: #2E7D32;
-}
-.btn-shuffle {
-  background: #4CAF50;
-  color: white;
-}
-.btn-shuffle:hover { background: #388E3C; }
-.btn-hint {
-  background: #FF9800;
-  color: white;
-}
+.controls select { background: white; border: 2px solid #4CAF50; color: #2E7D32; }
+.btn-new { background: #4CAF50; color: white; }
+.btn-new:hover { background: #388E3C; }
+.btn-hint { background: #FF9800; color: white; }
 .btn-hint:hover { background: #F57C00; }
-.btn-home {
-  background: white;
-  color: #2E7D32;
-  border: 2px solid #4CAF50;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-}
+.btn-preview { background: white; color: #2E7D32; border: 2px solid #4CAF50; }
+.btn-home { background: white; color: #2E7D32; border: 2px solid #4CAF50; display: inline-flex; align-items: center; }
+
 .stats {
-  display: flex;
-  gap: 20px;
-  margin: 10px 0;
-  font-size: 16px;
-  color: #333;
+  display: flex; gap: 20px; margin: 6px 0; font-size: 15px; color: #333;
 }
 .stats span { font-weight: 700; color: #2E7D32; }
 
-.puzzle-container {
+/* Grid area - where pieces should be placed */
+.puzzle-board {
   position: relative;
-  margin: 10px auto;
-  border: 4px solid #4CAF50;
+  margin: 8px auto;
+  border: 3px solid #4CAF50;
   border-radius: 8px;
-  overflow: hidden;
-  background: #333;
-  touch-action: none;
+  background: rgba(0,0,0,0.08);
+}
+.grid-slot {
+  position: absolute;
+  border: 1px dashed rgba(76,175,80,0.4);
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+.grid-slot.highlight {
+  background: rgba(76,175,80,0.25);
+  border-color: #4CAF50;
+}
+.grid-slot.occupied {
+  border-color: transparent;
+  background: transparent;
 }
 
+/* Pieces area - scattered pieces below */
+.pieces-area {
+  margin: 10px auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  max-width: 620px;
+  min-height: 80px;
+  background: rgba(139,195,74,0.1);
+  border: 2px dashed #8BC34A;
+  border-radius: 12px;
+}
+.pieces-label {
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+/* Puzzle piece */
 .puzzle-piece {
-  position: absolute;
+  width: var(--pw);
+  height: var(--ph);
   background-image: url('puzzle.jpg');
   background-size: var(--full-w) var(--full-h);
   cursor: grab;
-  border: 1px solid rgba(255,255,255,0.3);
-  transition: box-shadow 0.2s;
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 .puzzle-piece:hover {
-  box-shadow: 0 0 10px rgba(76,175,80,0.6);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   z-index: 10;
 }
 .puzzle-piece.dragging {
-  opacity: 0.7;
+  position: fixed;
+  z-index: 1000;
+  opacity: 0.85;
   cursor: grabbing;
-  z-index: 100;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  pointer-events: none;
+  transition: none;
+}
+.puzzle-piece.placed {
+  position: absolute;
+  cursor: default;
+  border: 1px solid rgba(76,175,80,0.3);
+  box-shadow: none;
+  border-radius: 2px;
+  transition: none;
+}
+.puzzle-piece.placed:hover {
+  transform: none;
+  box-shadow: 0 0 8px rgba(255,152,0,0.5);
+  cursor: pointer;
 }
 .puzzle-piece.correct {
   border: 2px solid #4CAF50;
-  box-shadow: 0 0 8px rgba(76,175,80,0.5);
-  cursor: default;
-}
-.puzzle-piece.hint {
-  animation: hintPulse 1s ease-in-out 3;
-}
-@keyframes hintPulse {
-  0%, 100% { box-shadow: 0 0 5px rgba(255,152,0,0.3); }
-  50% { box-shadow: 0 0 20px rgba(255,152,0,0.8); }
+  box-shadow: inset 0 0 10px rgba(76,175,80,0.2);
 }
 
-.preview-toggle {
-  margin: 10px 0;
-}
-.preview-toggle button {
-  padding: 8px 16px;
-  border: 2px solid #4CAF50;
-  background: white;
-  color: #2E7D32;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-}
-.preview-toggle button:hover { background: #E8F5E9; }
+/* Preview */
 .preview-img {
-  display: none;
-  max-width: 300px;
-  border-radius: 8px;
-  border: 2px solid #4CAF50;
-  margin: 10px auto;
+  display: none; max-width: 250px; border-radius: 8px;
+  border: 2px solid #4CAF50; margin: 8px auto;
 }
 .preview-img.show { display: block; }
 
+/* Win overlay */
 .win-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); z-index: 2000;
+  justify-content: center; align-items: center;
 }
 .win-overlay.show { display: flex; }
 .win-box {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  text-align: center;
-  max-width: 400px;
-  animation: popIn 0.5s ease;
+  background: white; border-radius: 20px; padding: 35px;
+  text-align: center; max-width: 380px; animation: popIn 0.5s ease;
 }
 @keyframes popIn {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.win-box h2 { color: #2E7D32; font-size: 28px; margin-bottom: 10px; }
-.win-box p { color: #555; font-size: 16px; margin-bottom: 5px; }
-.win-box .trophy { font-size: 60px; margin-bottom: 15px; }
+.win-box h2 { color: #2E7D32; font-size: 26px; margin-bottom: 8px; }
+.win-box p { color: #555; font-size: 15px; margin-bottom: 4px; }
+.win-box .trophy { font-size: 55px; margin-bottom: 12px; }
 .win-box button {
-  margin-top: 15px;
-  padding: 12px 30px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
+  margin-top: 12px; padding: 10px 25px; background: #4CAF50; color: white;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;
 }
 
-.footer {
-  margin: 20px 0;
-  text-align: center;
-}
-.footer a {
-  color: #2E7D32;
-  text-decoration: none;
-  font-weight: 600;
-}
+.footer { margin: 15px 0; text-align: center; }
+.footer a { color: #2E7D32; text-decoration: none; font-weight: 600; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>🧩 CroAgroView Puzzle</h1>
-  <p>Posloži sliku i otkrij poljoprivredni stroj!</p>
+  <p>Povuci komade na ispravno mjesto i slozi sliku!</p>
 </div>
 
 <div class="controls">
   <select id="difficulty" onchange="initPuzzle()">
-    <option value="3x3">Lako (3x3)</option>
-    <option value="4x4" selected>Srednje (4x4)</option>
-    <option value="5x5">Teško (5x5)</option>
+    <option value="3x2">Lako (3x2)</option>
+    <option value="4x3" selected>Srednje (4x3)</option>
+    <option value="5x4">Tesko (5x4)</option>
     <option value="6x4">Pro (6x4)</option>
   </select>
-  <button class="btn-shuffle" onclick="shufflePieces()">🔀 Pomiješaj</button>
-  <button class="btn-hint" onclick="showHint()">💡 Pomoć</button>
-  <a href="/" class="btn-home controls-btn">🏠 Početna</a>
+  <button class="btn-new" onclick="initPuzzle()">🔀 Nova igra</button>
+  <button class="btn-hint" onclick="showHint()">💡 Pomoc</button>
+  <button class="btn-preview" onclick="togglePreview()">🖼️ Original</button>
+  <a href="/game" class="btn-home">🎮 Igre</a>
 </div>
 
 <div class="stats">
-  Potezi: <span id="moves">0</span> &nbsp;|&nbsp; Vrijeme: <span id="timer">00:00</span>
+  Potezi: <span id="moves">0</span> &nbsp;|&nbsp; Vrijeme: <span id="timer">00:00</span> &nbsp;|&nbsp; Slozeno: <span id="placed">0</span>/<span id="total">12</span>
 </div>
 
-<div class="preview-toggle">
-  <button onclick="togglePreview()">🖼️ Prikaži/sakrij original</button>
-</div>
 <img src="puzzle.jpg" class="preview-img" id="previewImg" alt="Original">
 
-<div class="puzzle-container" id="puzzleContainer"></div>
+<div class="puzzle-board" id="board"></div>
+
+<div class="pieces-area" id="piecesArea">
+  <div class="pieces-label">⬇️ Povuci komade odavde na plocu iznad ⬆️</div>
+</div>
 
 <div class="win-overlay" id="winOverlay">
   <div class="win-box">
     <div class="trophy">🏆</div>
     <h2>Bravo!</h2>
-    <p>Složio si puzzle!</p>
+    <p>Slozio si puzzle!</p>
     <p>Potezi: <span id="winMoves">0</span></p>
     <p>Vrijeme: <span id="winTime">00:00</span></p>
-    <button onclick="playAgain()">🔄 Igraj ponovo</button>
+    <button onclick="initPuzzle()">🔄 Igraj ponovo</button>
   </div>
 </div>
 
@@ -237,104 +217,94 @@ body {
 const img = new Image();
 img.src = 'puzzle.jpg';
 
-let gridCols = 4;
-let gridRows = 4;
-let pieces = [];
-let moves = 0;
-let timerInterval = null;
-let seconds = 0;
-let selectedPiece = null;
-let correctCount = 0;
-let containerW, containerH, pieceW, pieceH;
+let cols = 4, rows = 3;
+let boardW, boardH, pw, ph;
+let moves = 0, seconds = 0, timerInterval = null;
+let placedCount = 0;
+let dragPiece = null, dragOffX = 0, dragOffY = 0;
+let allPieces = [];
+let slots = [];
 
 img.onload = () => initPuzzle();
 
 function initPuzzle() {
-  const val = document.getElementById('difficulty').value;
-  const parts = val.split('x');
-  gridCols = parseInt(parts[0]);
-  gridRows = parseInt(parts[1]);
-  moves = 0;
-  seconds = 0;
-  correctCount = 0;
+  const val = document.getElementById('difficulty').value.split('x');
+  cols = parseInt(val[0]);
+  rows = parseInt(val[1]);
+
+  moves = 0; seconds = 0; placedCount = 0;
   document.getElementById('moves').textContent = '0';
   document.getElementById('timer').textContent = '00:00';
+  document.getElementById('placed').textContent = '0';
+  document.getElementById('total').textContent = cols * rows;
   document.getElementById('winOverlay').classList.remove('show');
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
 
-  const maxW = Math.min(window.innerWidth - 30, 600);
+  const maxW = Math.min(window.innerWidth - 20, 580);
   const ratio = img.naturalHeight / img.naturalWidth;
-  containerW = maxW;
-  containerH = Math.round(maxW * ratio);
-  pieceW = containerW / gridCols;
-  pieceH = containerH / gridRows;
+  boardW = maxW;
+  boardH = Math.round(maxW * ratio);
+  pw = boardW / cols;
+  ph = boardH / rows;
 
-  const container = document.getElementById('puzzleContainer');
-  container.style.width = containerW + 'px';
-  container.style.height = containerH + 'px';
-  container.style.setProperty('--full-w', containerW + 'px');
-  container.style.setProperty('--full-h', containerH + 'px');
-  container.innerHTML = '';
+  // Build board with slots
+  const board = document.getElementById('board');
+  board.style.width = boardW + 'px';
+  board.style.height = boardH + 'px';
+  board.innerHTML = '';
+  slots = [];
 
-  pieces = [];
-  for (let row = 0; row < gridRows; row++) {
-    for (let col = 0; col < gridCols; col++) {
-      const piece = document.createElement('div');
-      piece.className = 'puzzle-piece';
-      piece.style.width = pieceW + 'px';
-      piece.style.height = pieceH + 'px';
-      piece.style.backgroundPosition = `-${col * pieceW}px -${row * pieceH}px`;
-      piece.style.setProperty('--full-w', containerW + 'px');
-      piece.style.setProperty('--full-h', containerH + 'px');
-      piece.dataset.correctRow = row;
-      piece.dataset.correctCol = col;
-      piece.dataset.currentRow = row;
-      piece.dataset.currentCol = col;
-      piece.style.left = col * pieceW + 'px';
-      piece.style.top = row * pieceH + 'px';
-
-      // Touch & mouse events
-      piece.addEventListener('mousedown', onPieceDown);
-      piece.addEventListener('touchstart', onPieceTouchStart, {passive: false});
-
-      container.appendChild(piece);
-      pieces.push(piece);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const slot = document.createElement('div');
+      slot.className = 'grid-slot';
+      slot.style.width = pw + 'px';
+      slot.style.height = ph + 'px';
+      slot.style.left = c * pw + 'px';
+      slot.style.top = r * ph + 'px';
+      slot.dataset.row = r;
+      slot.dataset.col = c;
+      slot.dataset.filled = 'false';
+      board.appendChild(slot);
+      slots.push(slot);
     }
   }
 
-  shufflePieces();
-}
+  // Build pieces (shuffled) in pieces area
+  const area = document.getElementById('piecesArea');
+  area.innerHTML = '<div class="pieces-label">⬇️ Povuci komade odavde na plocu iznad ⬆️</div>';
+  allPieces = [];
 
-function shufflePieces() {
-  moves = 0;
-  seconds = 0;
-  correctCount = 0;
-  document.getElementById('moves').textContent = '0';
-  document.getElementById('timer').textContent = '00:00';
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
+  const order = [];
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      order.push({ r, c });
 
-  // Fisher-Yates shuffle positions
-  const positions = [];
-  for (let r = 0; r < gridRows; r++)
-    for (let c = 0; c < gridCols; c++)
-      positions.push({row: r, col: c});
-
-  for (let i = positions.length - 1; i > 0; i--) {
+  // Shuffle
+  for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [positions[i], positions[j]] = [positions[j], positions[i]];
+    [order[i], order[j]] = [order[j], order[i]];
   }
 
-  pieces.forEach((piece, idx) => {
-    piece.dataset.currentRow = positions[idx].row;
-    piece.dataset.currentCol = positions[idx].col;
-    piece.style.left = positions[idx].col * pieceW + 'px';
-    piece.style.top = positions[idx].row * pieceH + 'px';
-    piece.classList.remove('correct');
-  });
+  order.forEach(({ r, c }) => {
+    const piece = document.createElement('div');
+    piece.className = 'puzzle-piece';
+    piece.style.setProperty('--pw', pw + 'px');
+    piece.style.setProperty('--ph', ph + 'px');
+    piece.style.setProperty('--full-w', boardW + 'px');
+    piece.style.setProperty('--full-h', boardH + 'px');
+    piece.style.backgroundPosition = `-${c * pw}px -${r * ph}px`;
+    piece.dataset.correctRow = r;
+    piece.dataset.correctCol = c;
+    piece.dataset.placed = 'false';
 
-  checkAllCorrect();
+    piece.addEventListener('mousedown', onDragStart);
+    piece.addEventListener('touchstart', onDragStart, { passive: false });
+
+    area.appendChild(piece);
+    allPieces.push(piece);
+  });
 }
 
 function startTimer() {
@@ -347,107 +317,185 @@ function startTimer() {
   }, 1000);
 }
 
-function onPieceDown(e) {
-  if (e.target.classList.contains('correct')) return;
+function onDragStart(e) {
   e.preventDefault();
   startTimer();
-  if (!selectedPiece) {
-    selectedPiece = e.target;
-    selectedPiece.classList.add('dragging');
-  } else {
-    swapPieces(selectedPiece, e.target);
-    selectedPiece.classList.remove('dragging');
-    selectedPiece = null;
+
+  const piece = e.target.closest('.puzzle-piece');
+  if (!piece) return;
+
+  // If piece is placed on board, pick it back up
+  if (piece.dataset.placed === 'true') {
+    const pr = parseInt(piece.dataset.placedRow);
+    const pc = parseInt(piece.dataset.placedCol);
+    const slot = slots.find(s => parseInt(s.dataset.row) === pr && parseInt(s.dataset.col) === pc);
+    if (slot) {
+      slot.dataset.filled = 'false';
+      slot.classList.remove('occupied');
+    }
+    piece.dataset.placed = 'false';
+    piece.classList.remove('placed', 'correct');
+    piece.style.position = '';
+    piece.style.left = '';
+    piece.style.top = '';
+    // Move back to pieces area
+    document.getElementById('piecesArea').appendChild(piece);
+    placedCount--;
+    document.getElementById('placed').textContent = placedCount;
   }
+
+  dragPiece = piece;
+
+  const rect = piece.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  dragOffX = clientX - rect.left;
+  dragOffY = clientY - rect.top;
+
+  piece.classList.add('dragging');
+  piece.style.left = (clientX - dragOffX) + 'px';
+  piece.style.top = (clientY - dragOffY) + 'px';
+
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+  document.addEventListener('touchmove', onDragMove, { passive: false });
+  document.addEventListener('touchend', onDragEnd);
 }
 
-function onPieceTouchStart(e) {
-  if (e.target.classList.contains('correct')) return;
+function onDragMove(e) {
+  if (!dragPiece) return;
   e.preventDefault();
-  startTimer();
-  if (!selectedPiece) {
-    selectedPiece = e.target;
-    selectedPiece.classList.add('dragging');
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  dragPiece.style.left = (clientX - dragOffX) + 'px';
+  dragPiece.style.top = (clientY - dragOffY) + 'px';
+
+  // Highlight nearest slot
+  slots.forEach(s => s.classList.remove('highlight'));
+  const slot = findNearestSlot(clientX, clientY);
+  if (slot && slot.dataset.filled === 'false') {
+    slot.classList.add('highlight');
+  }
+}
+
+function onDragEnd(e) {
+  if (!dragPiece) return;
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+  document.removeEventListener('touchmove', onDragMove);
+  document.removeEventListener('touchend', onDragEnd);
+
+  const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+  const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+  slots.forEach(s => s.classList.remove('highlight'));
+
+  const slot = findNearestSlot(clientX, clientY);
+  if (slot && slot.dataset.filled === 'false') {
+    // Place piece on board
+    const board = document.getElementById('board');
+    const slotR = parseInt(slot.dataset.row);
+    const slotC = parseInt(slot.dataset.col);
+
+    dragPiece.classList.remove('dragging');
+    dragPiece.classList.add('placed');
+    dragPiece.dataset.placed = 'true';
+    dragPiece.dataset.placedRow = slotR;
+    dragPiece.dataset.placedCol = slotC;
+    dragPiece.style.position = 'absolute';
+    dragPiece.style.left = slotC * pw + 'px';
+    dragPiece.style.top = slotR * ph + 'px';
+
+    slot.dataset.filled = 'true';
+    slot.classList.add('occupied');
+    board.appendChild(dragPiece);
+
+    // Check if correct
+    const correctR = parseInt(dragPiece.dataset.correctRow);
+    const correctC = parseInt(dragPiece.dataset.correctCol);
+    if (slotR === correctR && slotC === correctC) {
+      dragPiece.classList.add('correct');
+    }
+
+    moves++;
+    placedCount++;
+    document.getElementById('moves').textContent = moves;
+    document.getElementById('placed').textContent = placedCount;
+
+    // Check win
+    if (placedCount === cols * rows) {
+      const allCorrect = allPieces.every(p => p.classList.contains('correct'));
+      if (allCorrect) {
+        clearInterval(timerInterval);
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        document.getElementById('winMoves').textContent = moves;
+        document.getElementById('winTime').textContent = m + ':' + s;
+        setTimeout(() => {
+          document.getElementById('winOverlay').classList.add('show');
+        }, 400);
+      }
+    }
   } else {
-    swapPieces(selectedPiece, e.target);
-    selectedPiece.classList.remove('dragging');
-    selectedPiece = null;
+    // Return piece to pieces area
+    dragPiece.classList.remove('dragging');
+    dragPiece.style.position = '';
+    dragPiece.style.left = '';
+    dragPiece.style.top = '';
+    document.getElementById('piecesArea').appendChild(dragPiece);
   }
+
+  dragPiece = null;
 }
 
-function swapPieces(a, b) {
-  if (a === b) {
-    a.classList.remove('dragging');
-    selectedPiece = null;
-    return;
-  }
-  const aRow = a.dataset.currentRow;
-  const aCol = a.dataset.currentCol;
-  const bRow = b.dataset.currentRow;
-  const bCol = b.dataset.currentCol;
+function findNearestSlot(x, y) {
+  const board = document.getElementById('board');
+  const boardRect = board.getBoundingClientRect();
+  // Check if cursor is over the board
+  if (x < boardRect.left - 20 || x > boardRect.right + 20 ||
+      y < boardRect.top - 20 || y > boardRect.bottom + 20) return null;
 
-  a.dataset.currentRow = bRow;
-  a.dataset.currentCol = bCol;
-  a.style.left = bCol * pieceW + 'px';
-  a.style.top = bRow * pieceH + 'px';
-
-  b.dataset.currentRow = aRow;
-  b.dataset.currentCol = aCol;
-  b.style.left = aCol * pieceW + 'px';
-  b.style.top = aRow * pieceH + 'px';
-
-  moves++;
-  document.getElementById('moves').textContent = moves;
-
-  checkPiece(a);
-  checkPiece(b);
-  checkAllCorrect();
-}
-
-function checkPiece(piece) {
-  if (piece.dataset.currentRow === piece.dataset.correctRow &&
-      piece.dataset.currentCol === piece.dataset.correctCol) {
-    piece.classList.add('correct');
-  } else {
-    piece.classList.remove('correct');
-  }
-}
-
-function checkAllCorrect() {
-  correctCount = pieces.filter(p => p.classList.contains('correct')).length;
-  if (correctCount === pieces.length) {
-    // WIN!
-    clearInterval(timerInterval);
-    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    document.getElementById('winMoves').textContent = moves;
-    document.getElementById('winTime').textContent = m + ':' + s;
-    setTimeout(() => {
-      document.getElementById('winOverlay').classList.add('show');
-    }, 300);
-  }
+  let nearest = null, minDist = Infinity;
+  slots.forEach(slot => {
+    const sr = slot.getBoundingClientRect();
+    const cx = sr.left + sr.width / 2;
+    const cy = sr.top + sr.height / 2;
+    const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+    if (dist < minDist && dist < pw) {
+      minDist = dist;
+      nearest = slot;
+    }
+  });
+  return nearest;
 }
 
 function showHint() {
-  // Find first incorrect piece and briefly highlight where it should go
-  const wrong = pieces.find(p => !p.classList.contains('correct'));
+  // Find a piece that's not placed or placed incorrectly, flash its correct slot
+  const wrong = allPieces.find(p => !p.classList.contains('correct'));
   if (!wrong) return;
-  wrong.classList.add('hint');
-  setTimeout(() => wrong.classList.remove('hint'), 3000);
+  const cr = parseInt(wrong.dataset.correctRow);
+  const cc = parseInt(wrong.dataset.correctCol);
+  const slot = slots.find(s => parseInt(s.dataset.row) === cr && parseInt(s.dataset.col) === cc);
+  if (slot) {
+    slot.style.background = 'rgba(255,152,0,0.4)';
+    slot.style.border = '2px solid #FF9800';
+    // Also highlight the piece
+    wrong.style.outline = '3px solid #FF9800';
+    setTimeout(() => {
+      slot.style.background = '';
+      slot.style.border = '';
+      wrong.style.outline = '';
+    }, 2000);
+  }
 }
 
 function togglePreview() {
   document.getElementById('previewImg').classList.toggle('show');
 }
 
-function playAgain() {
-  document.getElementById('winOverlay').classList.remove('show');
-  shufflePieces();
-}
-
-// Handle window resize
 window.addEventListener('resize', () => {
-  if (pieces.length > 0) initPuzzle();
+  if (allPieces.length > 0) initPuzzle();
 });
 </script>
 </body>
