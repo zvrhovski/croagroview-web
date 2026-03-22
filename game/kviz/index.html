@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kviz za farmere – CroAgroView</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7e8 0%, #e8f5e9 50%, #f1f8e9 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.back-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #2E7D32;
+  color: white;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+h1 { color: #2E7D32; font-size: 28px; margin-bottom: 5px; text-align: center; }
+.subtitle { color: #555; font-size: 15px; margin-bottom: 20px; text-align: center; }
+.quiz-container {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #E8F5E9;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #43A047, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.question-num { color: #888; font-size: 13px; margin-bottom: 8px; }
+.question {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1B5E20;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+.answers { display: flex; flex-direction: column; gap: 12px; }
+.answer-btn {
+  padding: 16px 20px;
+  border: 2px solid #C8E6C9;
+  border-radius: 14px;
+  background: #FAFFF5;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.3s;
+  color: #333;
+}
+.answer-btn:hover { border-color: #43A047; background: #E8F5E9; }
+.answer-btn.correct { border-color: #2E7D32; background: #C8E6C9; color: #1B5E20; }
+.answer-btn.wrong { border-color: #C62828; background: #FFCDD2; color: #B71C1C; }
+.answer-btn.show-correct { border-color: #2E7D32; background: #C8E6C9; color: #1B5E20; }
+.answer-btn:disabled { cursor: default; }
+.feedback {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  display: none;
+}
+.feedback.correct { display: block; background: #E8F5E9; color: #2E7D32; }
+.feedback.wrong { display: block; background: #FFEBEE; color: #C62828; }
+.next-btn {
+  display: none;
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  background: #2E7D32;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.next-btn:hover { background: #1B5E20; }
+.next-btn.visible { display: block; }
+.result {
+  text-align: center;
+  display: none;
+}
+.result.visible { display: block; }
+.result-emoji { font-size: 80px; margin-bottom: 15px; }
+.result-title { font-size: 26px; font-weight: 800; color: #1B5E20; margin-bottom: 10px; }
+.result-score { font-size: 48px; font-weight: 900; color: #2E7D32; margin-bottom: 5px; }
+.result-text { color: #555; font-size: 16px; margin-bottom: 25px; }
+.result-bar { width: 100%; height: 12px; background: #E8F5E9; border-radius: 6px; margin-bottom: 25px; overflow: hidden; }
+.result-bar-fill { height: 100%; border-radius: 6px; transition: width 1s; }
+.play-again {
+  padding: 14px 40px;
+  background: #2E7D32;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.play-again:hover { background: #1B5E20; }
+.score-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #F1F8E9;
+  border-radius: 10px;
+}
+.score-display span { font-weight: 700; color: #2E7D32; }
+</style>
+</head>
+<body>
+
+<a href="/game" class="back-btn">← Igre</a>
+<h1>🌾 Kviz za farmere</h1>
+<p class="subtitle">Testiraj svoje znanje o poljoprivredi!</p>
+
+<div class="quiz-container">
+  <div id="quizArea">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="score-display">
+      <span id="qNum">Pitanje 1/15</span>
+      <span id="scoreShow">Bodovi: 0</span>
+    </div>
+    <div class="question" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Sljedeće pitanje →</button>
+  </div>
+  <div class="result" id="result">
+    <div class="result-emoji" id="resultEmoji"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-text" id="resultText"></div>
+    <div class="result-bar"><div class="result-bar-fill" id="resultBar"></div></div>
+    <button class="play-again" onclick="startQuiz()">🔄 Igraj ponovo</button>
+  </div>
+</div>
+
+<script>
+const allQuestions = [
+  { q: "Koja je najraširenija žitarica u Hrvatskoj?", a: ["Kukuruz", "Pšenica", "Ječam", "Raž"], c: 0 },
+  { q: "Koji je optimalni pH tla za većinu povrtlarskih kultura?", a: ["4.0 - 5.0", "5.5 - 6.5", "6.0 - 7.0", "7.5 - 8.5"], c: 2 },
+  { q: "Što je plodored?", a: ["Vrsta gnojiva", "Izmjena kultura na istom polju", "Sustav navodnjavanja", "Vrsta traktora"], c: 1 },
+  { q: "Koja kultura je poznata kao 'zelena gnojidba'?", a: ["Kukuruz", "Suncokret", "Djetelina", "Rajčica"], c: 2 },
+  { q: "Koliko stupnjeva Celzija je minimalna temperatura za klijanje kukuruza?", a: ["2°C", "5°C", "8°C", "12°C"], c: 2 },
+  { q: "Koje povrće je dobar susjed rajčici u mješovitoj sadnji?", a: ["Krumpir", "Bosiljak", "Kupus", "Krastavac"], c: 1 },
+  { q: "Što označava NPK na gnojivima?", a: ["Natrij, Fosfor, Kalij", "Dušik, Fosfor, Kalij", "Natrij, Proteini, Kalcij", "Dušik, Proteini, Kalij"], c: 1 },
+  { q: "Koja je najčešća bolest vinove loze?", a: ["Pepelnica", "Plamenjača", "Hrđa", "Krastavost"], c: 1 },
+  { q: "Kada se u Hrvatskoj obično sije ozima pšenica?", a: ["Ožujak-travanj", "Svibanj-lipanj", "Rujan-listopad", "Prosinac-siječanj"], c: 2 },
+  { q: "Koji štetnik najčešće napada krumpir?", a: ["Lisne uši", "Kukuruzni moljac", "Krumpirova zlatica", "Žitni žižak"], c: 2 },
+  { q: "Što je kompostiranje?", a: ["Kemijska obrada tla", "Biološka razgradnja organskog materijala", "Mehanička obrada zemlje", "Proces sušenja sijena"], c: 1 },
+  { q: "Koja je prosječna godišnja količina oborina u Slavoniji?", a: ["300-400 mm", "500-600 mm", "650-800 mm", "1000-1200 mm"], c: 2 },
+  { q: "Koji se plin najviše koristi u staklenicima za ubrzanje rasta biljaka?", a: ["Kisik", "Dušik", "Ugljikov dioksid", "Metan"], c: 2 },
+  { q: "Što je drenaža u poljoprivredi?", a: ["Sustav navodnjavanja", "Odvođenje viška vode iz tla", "Vrsta gnojiva", "Način sjetve"], c: 1 },
+  { q: "Koja životinja se smatra najboljim oprašivačem?", a: ["Leptir", "Pčela", "Muha", "Bumbar"], c: 1 },
+  { q: "Što je siliranje?", a: ["Sušenje trave", "Konzerviranje stočne hrane fermentacijom", "Mljevenje žitarica", "Prskanje pesticidima"], c: 1 },
+  { q: "Koja kultura troši najviše vode za uzgoj?", a: ["Pšenica", "Riža", "Kukuruz", "Soja"], c: 1 },
+  { q: "Koliko je otprilike obradive površine u Hrvatskoj?", a: ["500.000 ha", "900.000 ha", "1.500.000 ha", "2.000.000 ha"], c: 1 },
+  { q: "Što je organska poljoprivreda?", a: ["Uzgoj samo u staklenicima", "Uzgoj bez sintetičkih kemikalija", "Uzgoj samo žitarica", "Hidroponski uzgoj"], c: 1 },
+  { q: "Koji tip tla je najplodniji?", a: ["Pjeskovito", "Glineno", "Černozem", "Kamenito"], c: 2 },
+  { q: "Što je kapljično navodnjavanje?", a: ["Navodnjavanje kišnim aparatima", "Precizno navodnjavanje kap po kap", "Potapanje polja vodom", "Ručno zalijevanje"], c: 1 },
+  { q: "Koja se sorta jabuke najviše uzgaja u Hrvatskoj?", a: ["Granny Smith", "Idared", "Fuji", "Pink Lady"], c: 1 },
+  { q: "Što je herbicid?", a: ["Sredstvo protiv insekata", "Sredstvo protiv korova", "Sredstvo protiv gljivica", "Gnojivo"], c: 1 },
+  { q: "U kojem mjesecu se obično beru masline u Hrvatskoj?", a: ["Srpanj", "Rujan", "Listopad-studeni", "Prosinac"], c: 2 },
+  { q: "Koja hrvatska regija je poznata po vinogradarstvu?", a: ["Lika", "Slavonija", "Gorski kotar", "Zagorje"], c: 1 },
+  { q: "Što je agrotehnički rok?", a: ["Cijena poljoprivrednog proizvoda", "Optimalno vrijeme za provođenje agrotehničkih mjera", "Rok trajanja gnojiva", "Garancija za strojeve"], c: 1 },
+  { q: "Koliko litara mlijeka dnevno daje prosječna hrvatska krava?", a: ["5-8 L", "10-15 L", "15-25 L", "30-40 L"], c: 2 },
+  { q: "Koji insekt prenosi bolest žuticu vinove loze?", a: ["Pčela", "Cikada", "Krumpirova zlatica", "Kukuruzni moljac"], c: 1 },
+  { q: "Što je agroforestry?", a: ["Uzgoj šumskog voća", "Kombinacija drveća i poljoprivrede na istom zemljištu", "Sječa šuma za oranice", "Sadnja samo četinjača"], c: 1 },
+  { q: "Koji element je najvažniji za rast listova biljke?", a: ["Kalij", "Fosfor", "Dušik", "Kalcij"], c: 2 },
+];
+
+let questions = [];
+let current = 0;
+let score = 0;
+const TOTAL = 15;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  questions = shuffle([...allQuestions]).slice(0, TOTAL);
+  current = 0;
+  score = 0;
+  document.getElementById('quizArea').style.display = 'block';
+  document.getElementById('result').classList.remove('visible');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[current];
+  document.getElementById('progress').style.width = ((current / TOTAL) * 100) + '%';
+  document.getElementById('qNum').textContent = 'Pitanje ' + (current + 1) + '/' + TOTAL;
+  document.getElementById('scoreShow').textContent = 'Bodovi: ' + score;
+  document.getElementById('question').textContent = q.q;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('nextBtn').classList.remove('visible');
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  q.a.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = ans;
+    btn.onclick = () => selectAnswer(i);
+    answersDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  const q = questions[current];
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+
+  if (idx === q.c) {
+    btns[idx].classList.add('correct');
+    fb.className = 'feedback correct';
+    fb.textContent = '✅ Točno! Bravo!';
+    score++;
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.c].classList.add('show-correct');
+    fb.className = 'feedback wrong';
+    fb.textContent = '❌ Netočno. Točan odgovor: ' + q.a[q.c];
+  }
+
+  document.getElementById('scoreShow').textContent = 'Bodovi: ' + score;
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= TOTAL) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quizArea').style.display = 'none';
+  const res = document.getElementById('result');
+  res.classList.add('visible');
+
+  const pct = Math.round((score / TOTAL) * 100);
+  let emoji, title, text, color;
+
+  if (pct >= 90) { emoji = '🏆'; title = 'Pravi agronom!'; text = 'Izvrsno znanje poljoprivrede!'; color = '#2E7D32'; }
+  else if (pct >= 70) { emoji = '🌟'; title = 'Odlično!'; text = 'Imaš solidno znanje o poljoprivredi.'; color = '#43A047'; }
+  else if (pct >= 50) { emoji = '🌱'; title = 'Dobro!'; text = 'Na dobrom si putu, nastavi učiti!'; color = '#F57C00'; }
+  else if (pct >= 30) { emoji = '📚'; title = 'Može bolje!'; text = 'Probaj ponovo i nauči nešto novo!'; color = '#E65100'; }
+  else { emoji = '🌾'; title = 'Početnik'; text = 'Koristi CroAgroView za učenje!'; color = '#C62828'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultScore').textContent = score + '/' + TOTAL;
+  document.getElementById('resultText').textContent = text + ' (' + pct + '%)';
+
+  const bar = document.getElementById('resultBar');
+  bar.style.width = '0%';
+  bar.style.background = color;
+  setTimeout(() => { bar.style.width = pct + '%'; }, 100);
+}
+
+startQuiz();
+</script>
+
+</body>
+</html>
