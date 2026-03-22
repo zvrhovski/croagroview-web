@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalendar vrta – CroAgroView</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f5f7e8 0%, #e8f5e9 50%, #f1f8e9 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #2E7D32;
+  color: white;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+h1 { color: #2E7D32; font-size: 26px; text-align: center; margin-bottom: 5px; }
+.subtitle { color: #555; font-size: 14px; text-align: center; margin-bottom: 15px; }
+
+.game-area {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.score-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.score-bar span { font-weight: 700; color: #2E7D32; font-size: 15px; }
+.score-bar button {
+  padding: 8px 20px;
+  background: #2E7D32;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+.score-bar button:hover { background: #1B5E20; }
+
+.instructions {
+  background: white;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+.instructions strong { color: #2E7D32; }
+
+/* Plants to place */
+.plants-tray {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.plants-tray h3 { color: #2E7D32; font-size: 15px; margin-bottom: 10px; }
+.plants-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.plant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #FFF8E1;
+  border: 2px solid #FFD54F;
+  border-radius: 30px;
+  cursor: grab;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.2s;
+  user-select: none;
+}
+.plant-chip:hover { background: #FFECB3; transform: scale(1.05); }
+.plant-chip.placed { opacity: 0.4; cursor: default; border-color: #ccc; background: #eee; }
+.plant-chip.selected { border-color: #2E7D32; background: #C8E6C9; transform: scale(1.08); box-shadow: 0 2px 10px rgba(46,125,50,0.3); }
+
+/* Calendar grid */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+@media (max-width: 640px) { .calendar { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 420px) { .calendar { grid-template-columns: repeat(2, 1fr); } }
+
+.month-card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: all 0.3s;
+  cursor: pointer;
+  min-height: 120px;
+}
+.month-card:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
+.month-card.highlight { border: 2px dashed #2E7D32; background: #F1F8E9; }
+.month-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #1B5E20;
+  margin-bottom: 4px;
+}
+.month-season {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 8px;
+}
+.month-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 50px;
+}
+.placed-plant {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.placed-plant .remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  opacity: 0.5;
+}
+.placed-plant .remove-btn:hover { opacity: 1; }
+
+/* Results */
+.results-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.results-overlay.visible { display: flex; }
+.results-box {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: center;
+}
+.results-box h2 { color: #1B5E20; margin-bottom: 5px; }
+.results-emoji { font-size: 60px; margin-bottom: 10px; }
+.results-score { font-size: 42px; font-weight: 900; color: #2E7D32; margin-bottom: 10px; }
+.results-detail { text-align: left; margin: 15px 0; }
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.result-row.correct { background: #E8F5E9; }
+.result-row.partial { background: #FFF8E1; }
+.result-row.wrong { background: #FFEBEE; }
+.result-row .r-icon { font-size: 18px; }
+.result-row .r-text { flex: 1; }
+.result-row .r-points { font-weight: 700; }
+.results-box button {
+  margin-top: 15px;
+  padding: 12px 30px;
+  background: #2E7D32;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<a href="/game" class="back-btn">← Igre</a>
+<h1>📅 Kalendar vrta</h1>
+<p class="subtitle">Stavi svaku biljku u pravi mjesec za sjetvu!</p>
+
+<div class="game-area">
+  <div class="instructions">
+    <strong>Kako igrati:</strong> Klikni na biljku, zatim klikni na mjesec u koji misliš da se sije/sadi.
+    Za svaku točno postavljenu biljku dobivaš <strong>+3 boda</strong>.
+    Ako je mjesec blizu točnog (±1 mjesec), dobivaš <strong>+1 bod</strong>.
+    Netočan mjesec donosi <strong>0 bodova</strong>.
+  </div>
+
+  <div class="score-bar">
+    <span id="placed">Postavljeno: 0/10</span>
+    <span id="scoreDisplay">Bodovi: —</span>
+    <button onclick="checkResults()">✅ Provjeri</button>
+    <button onclick="startGame()">🔄 Nova igra</button>
+  </div>
+
+  <div class="plants-tray">
+    <h3>🌱 Biljke za posaditi:</h3>
+    <div class="plants-list" id="plantsList"></div>
+  </div>
+
+  <div class="calendar" id="calendar"></div>
+</div>
+
+<div class="results-overlay" id="resultsOverlay">
+  <div class="results-box">
+    <div class="results-emoji" id="resEmoji"></div>
+    <h2 id="resTitle"></h2>
+    <div class="results-score" id="resScore"></div>
+    <div class="results-detail" id="resDetail"></div>
+    <button onclick="closeResults()">Zatvori</button>
+    <button onclick="closeResults(); startGame();">🔄 Nova igra</button>
+  </div>
+</div>
+
+<script>
+const MONTHS = [
+  { name: 'Siječanj', season: 'Zima ❄️' },
+  { name: 'Veljača', season: 'Zima ❄️' },
+  { name: 'Ožujak', season: 'Proljeće 🌸' },
+  { name: 'Travanj', season: 'Proljeće 🌸' },
+  { name: 'Svibanj', season: 'Proljeće 🌸' },
+  { name: 'Lipanj', season: 'Ljeto ☀️' },
+  { name: 'Srpanj', season: 'Ljeto ☀️' },
+  { name: 'Kolovoz', season: 'Ljeto ☀️' },
+  { name: 'Rujan', season: 'Jesen 🍂' },
+  { name: 'Listopad', season: 'Jesen 🍂' },
+  { name: 'Studeni', season: 'Jesen 🍂' },
+  { name: 'Prosinac', season: 'Zima ❄️' },
+];
+
+const ALL_PLANTS = [
+  { emoji: '🍅', name: 'Rajčica', months: [3, 4] },
+  { emoji: '🥒', name: 'Krastavac', months: [4, 5] },
+  { emoji: '🫑', name: 'Paprika', months: [2, 3] },
+  { emoji: '🥕', name: 'Mrkva', months: [2, 3, 6, 7] },
+  { emoji: '🧅', name: 'Luk', months: [2, 3] },
+  { emoji: '🥬', name: 'Salata', months: [2, 3, 7, 8] },
+  { emoji: '🥦', name: 'Brokula', months: [3, 4, 6, 7] },
+  { emoji: '🌽', name: 'Kukuruz', months: [3, 4] },
+  { emoji: '🥔', name: 'Krumpir', months: [2, 3] },
+  { emoji: '🍆', name: 'Patlidžan', months: [3, 4] },
+  { emoji: '🧄', name: 'Češnjak', months: [9, 10] },
+  { emoji: '🫘', name: 'Grah', months: [4, 5] },
+  { emoji: '🌻', name: 'Suncokret', months: [3, 4] },
+  { emoji: '🎃', name: 'Bundeva', months: [4, 5] },
+  { emoji: '🍉', name: 'Lubenica', months: [4, 5] },
+  { emoji: '🥜', name: 'Kikiriki', months: [4, 5] },
+  { emoji: '🌶️', name: 'Ljuta paprika', months: [2, 3] },
+  { emoji: '🥗', name: 'Špinat', months: [2, 3, 8, 9] },
+  { emoji: '🫛', name: 'Grašak', months: [2, 3] },
+  { emoji: '🍓', name: 'Jagode', months: [3, 4, 8] },
+  { emoji: '🌿', name: 'Bosiljak', months: [4, 5] },
+  { emoji: '🪴', name: 'Peršin', months: [2, 3] },
+  { emoji: '🥝', name: 'Tikvice', months: [4, 5] },
+  { emoji: '🫐', name: 'Cikla', months: [3, 4, 7] },
+  { emoji: '🥗', name: 'Kelj', months: [5, 6, 7] },
+  { emoji: '🧅', name: 'Poriluk', months: [1, 2, 3] },
+  { emoji: '🌱', name: 'Rikula', months: [2, 3, 8, 9] },
+  { emoji: '🥬', name: 'Kupus', months: [2, 3, 6] },
+  { emoji: '🥕', name: 'Celer', months: [2, 3] },
+  { emoji: '🍅', name: 'Cherry rajčica', months: [3, 4] },
+];
+
+let selectedPlant = null;
+let placements = {}; // plantIndex -> monthIndex
+let gamePlants = [];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startGame() {
+  gamePlants = shuffle([...ALL_PLANTS]).slice(0, 10);
+  selectedPlant = null;
+  placements = {};
+  document.getElementById('scoreDisplay').textContent = 'Bodovi: —';
+  renderPlants();
+  renderCalendar();
+  updatePlaced();
+}
+
+function renderPlants() {
+  const list = document.getElementById('plantsList');
+  list.innerHTML = '';
+  gamePlants.forEach((p, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'plant-chip' + (placements[i] !== undefined ? ' placed' : '') + (selectedPlant === i ? ' selected' : '');
+    chip.textContent = p.emoji + ' ' + p.name;
+    chip.onclick = () => {
+      if (placements[i] !== undefined) return;
+      selectedPlant = selectedPlant === i ? null : i;
+      renderPlants();
+      renderCalendar();
+    };
+    list.appendChild(chip);
+  });
+}
+
+function renderCalendar() {
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+  MONTHS.forEach((m, mi) => {
+    const card = document.createElement('div');
+    card.className = 'month-card' + (selectedPlant !== null ? ' highlight' : '');
+    card.innerHTML = '<div class="month-name">' + m.name + '</div><div class="month-season">' + m.season + '</div><div class="month-slots" id="slots-' + mi + '"></div>';
+    card.onclick = () => placeInMonth(mi);
+    cal.appendChild(card);
+
+    // show placed plants
+    const slots = card.querySelector('.month-slots');
+    Object.keys(placements).forEach(pi => {
+      if (placements[pi] === mi) {
+        const pl = gamePlants[pi];
+        const div = document.createElement('div');
+        div.className = 'placed-plant';
+        div.style.background = '#E8F5E9';
+        div.style.color = '#1B5E20';
+        div.innerHTML = '<span>' + pl.emoji + ' ' + pl.name + '</span><button class="remove-btn" onclick="event.stopPropagation(); removePlant(' + pi + ')">✕</button>';
+        slots.appendChild(div);
+      }
+    });
+  });
+}
+
+function placeInMonth(monthIdx) {
+  if (selectedPlant === null) return;
+  placements[selectedPlant] = monthIdx;
+  selectedPlant = null;
+  renderPlants();
+  renderCalendar();
+  updatePlaced();
+}
+
+function removePlant(plantIdx) {
+  delete placements[plantIdx];
+  renderPlants();
+  renderCalendar();
+  updatePlaced();
+}
+
+function updatePlaced() {
+  const count = Object.keys(placements).length;
+  document.getElementById('placed').textContent = 'Postavljeno: ' + count + '/10';
+}
+
+function checkResults() {
+  const count = Object.keys(placements).length;
+  if (count < 10) {
+    alert('Postavi svih 10 biljaka prije provjere!');
+    return;
+  }
+
+  let totalScore = 0;
+  let maxScore = 10 * 3;
+  const details = [];
+
+  gamePlants.forEach((p, i) => {
+    const placed = placements[i];
+    const correct = p.months;
+    let points = 0;
+    let status = 'wrong';
+
+    if (correct.includes(placed)) {
+      points = 3;
+      status = 'correct';
+    } else {
+      // Check ±1 month
+      let close = false;
+      for (const cm of correct) {
+        if (Math.abs(placed - cm) === 1 || (placed === 0 && cm === 11) || (placed === 11 && cm === 0)) {
+          close = true;
+          break;
+        }
+      }
+      if (close) {
+        points = 1;
+        status = 'partial';
+      }
+    }
+
+    totalScore += points;
+    const correctNames = correct.map(m => MONTHS[m].name).join(', ');
+    details.push({
+      emoji: p.emoji,
+      name: p.name,
+      placed: MONTHS[placed].name,
+      correct: correctNames,
+      points: points,
+      status: status
+    });
+  });
+
+  document.getElementById('scoreDisplay').textContent = 'Bodovi: ' + totalScore + '/' + maxScore;
+
+  // Show results overlay
+  const pct = Math.round((totalScore / maxScore) * 100);
+  let emoji, title;
+  if (pct >= 90) { emoji = '🏆'; title = 'Pravi vrtlar!'; }
+  else if (pct >= 70) { emoji = '🌟'; title = 'Odlično poznavanje sezone!'; }
+  else if (pct >= 50) { emoji = '🌱'; title = 'Dobro, ali može bolje!'; }
+  else if (pct >= 30) { emoji = '📚'; title = 'Treba malo učenja!'; }
+  else { emoji = '🌾'; title = 'Počni s CroAgroView kalendarom!'; }
+
+  document.getElementById('resEmoji').textContent = emoji;
+  document.getElementById('resTitle').textContent = title;
+  document.getElementById('resScore').textContent = totalScore + '/' + maxScore + ' (' + pct + '%)';
+
+  const detailDiv = document.getElementById('resDetail');
+  detailDiv.innerHTML = '';
+  details.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'result-row ' + d.status;
+    const icon = d.status === 'correct' ? '✅' : d.status === 'partial' ? '🟡' : '❌';
+    row.innerHTML = '<span class="r-icon">' + d.emoji + '</span><span class="r-text"><strong>' + d.name + '</strong><br><small>Tvoj odgovor: ' + d.placed + ' | Točno: ' + d.correct + '</small></span><span class="r-points">+' + d.points + '</span>';
+    detailDiv.appendChild(row);
+  });
+
+  document.getElementById('resultsOverlay').classList.add('visible');
+}
+
+function closeResults() {
+  document.getElementById('resultsOverlay').classList.remove('visible');
+}
+
+startGame();
+</script>
+
+</body>
+</html>
