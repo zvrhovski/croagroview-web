@@ -560,20 +560,20 @@
     <section class="stats">
         <div class="stats-inner">
             <div class="stat-item">
-                <h3>12</h3>
-                <p>Modula aplikacije</p>
-            </div>
-            <div class="stat-item">
-                <h3>100%</h3>
-                <p>Besplatno</p>
-            </div>
-            <div class="stat-item">
                 <h3>4</h3>
                 <p>Društvene mreže</p>
             </div>
             <div class="stat-item">
+                <h3>12</h3>
+                <p>Modula aplikacije</p>
+            </div>
+            <div class="stat-item">
                 <h3 id="gameCount">🎮</h3>
                 <p>Poljoprivrednih igara</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Besplatno</p>
             </div>
         </div>
     </section>
@@ -765,7 +765,7 @@
         fetch('/game/index.html')
             .then(r => r.text())
             .then(html => {
-                const count = (html.match(/game-card/g) || []).length;
+                const count = (html.match(/class="game-card"/g) || []).length;
                 document.getElementById('gameCount').textContent = count;
             })
             .catch(() => { document.getElementById('gameCount').textContent = '5'; });
