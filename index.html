@@ -572,8 +572,8 @@
                 <p>Društvene mreže</p>
             </div>
             <div class="stat-item">
-                <h3>🇭🇷</h3>
-                <p>Za hrvatske poljoprivrednike</p>
+                <h3 id="gameCount">🎮</h3>
+                <p>Poljoprivrednih igara</p>
             </div>
         </div>
     </section>
@@ -760,6 +760,15 @@
                 });
             })
             .catch(() => {});
+
+        // Dynamic game counter
+        fetch('/game/index.html')
+            .then(r => r.text())
+            .then(html => {
+                const count = (html.match(/game-card/g) || []).length;
+                document.getElementById('gameCount').textContent = count;
+            })
+            .catch(() => { document.getElementById('gameCount').textContent = '5'; });
 
         document.querySelectorAll('.feature-card, .module-card, .stat-item').forEach(el => {
             el.style.opacity = '0';
